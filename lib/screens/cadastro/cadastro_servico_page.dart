@@ -10,16 +10,24 @@ class _CadastroServicoPageState extends State<CadastroServicoPage> {
   final TextEditingController descricaoController = TextEditingController();
   double progresso = 0.0;
 
+  // Simulando lista de obras
+  final List<Map<String, String>> obras = [
+    {'id': '1', 'nome': 'Residência A'},
+    {'id': '2', 'nome': 'Comercial B'},
+  ];
+
+  String? obraSelecionadaId;
+
   void _salvarServico() {
     String titulo = tituloController.text.trim();
     String descricao = descricaoController.text.trim();
 
-    if (titulo.isNotEmpty && descricao.isNotEmpty) {
-      // Aqui futuramente enviaremos os dados para a API
+    if (titulo.isNotEmpty && descricao.isNotEmpty && obraSelecionadaId != null) {
+      // Futuramente enviar para API
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Preencha todos os campos')),
+        SnackBar(content: Text('Preencha todos os campos e selecione a obra')),
       );
     }
   }
@@ -40,6 +48,21 @@ class _CadastroServicoPageState extends State<CadastroServicoPage> {
               controller: descricaoController,
               decoration: InputDecoration(labelText: 'Descrição'),
               maxLines: 3,
+            ),
+            DropdownButtonFormField<String>(
+              decoration: InputDecoration(labelText: 'Obra Vinculada'),
+              value: obraSelecionadaId,
+              items: obras.map((obra) {
+                return DropdownMenuItem(
+                  value: obra['id'],
+                  child: Text(obra['nome']!),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  obraSelecionadaId = value;
+                });
+              },
             ),
             Slider(
               value: progresso,

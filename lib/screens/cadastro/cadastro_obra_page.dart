@@ -10,16 +10,25 @@ class _CadastroObraPageState extends State<CadastroObraPage> {
   final TextEditingController enderecoController = TextEditingController();
   bool emAndamento = true;
 
+  // Simulando lista de clientes
+  final List<Map<String, String>> clientes = [
+    {'id': '1', 'nome': 'Cliente A'},
+    {'id': '2', 'nome': 'Cliente B'},
+    {'id': '3', 'nome': 'Cliente C'},
+  ];
+
+  String? clienteSelecionadoId;
+
   void _salvarObra() {
     String nome = nomeController.text.trim();
     String endereco = enderecoController.text.trim();
 
-    if (nome.isNotEmpty && endereco.isNotEmpty) {
-      // Aqui futuramente enviaremos os dados para a API
+    if (nome.isNotEmpty && endereco.isNotEmpty && clienteSelecionadoId != null) {
+      // Futuramente enviar para API
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Preencha todos os campos')),
+        SnackBar(content: Text('Preencha todos os campos e selecione o cliente')),
       );
     }
   }
@@ -39,6 +48,21 @@ class _CadastroObraPageState extends State<CadastroObraPage> {
             TextField(
               controller: enderecoController,
               decoration: InputDecoration(labelText: 'Endereço'),
+            ),
+            DropdownButtonFormField<String>(
+              decoration: InputDecoration(labelText: 'Cliente Responsável'),
+              value: clienteSelecionadoId,
+              items: clientes.map((cliente) {
+                return DropdownMenuItem(
+                  value: cliente['id'],
+                  child: Text(cliente['nome']!),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  clienteSelecionadoId = value;
+                });
+              },
             ),
             SwitchListTile(
               title: Text('Em andamento?'),

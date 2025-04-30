@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   final List<Map<String, String>> obras = [
-    {'nome': 'Residência A', 'endereco': 'Rua 1, Bairro X'},
-    {'nome': 'Comercial B', 'endereco': 'Av. 2, Centro'},
+    {'nome': 'Residência A', 'endereco': 'Rua 1, Bairro X', 'cliente': 'Cliente A'},
+    {'nome': 'Comercial B', 'endereco': 'Av. 2, Centro', 'cliente': 'Cliente B'},
   ];
 
+  bool mostrarBotoes = false;
+
   void _logout(BuildContext context) {
-    // TODO: limpar SharedPreferences futuramente
     Navigator.pushReplacementNamed(context, '/login');
   }
 
@@ -60,47 +66,52 @@ class HomePage extends StatelessWidget {
           );
         },
       ),
-      floatingActionButton: _buildExpandableFab(context),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (mostrarBotoes) ...[
+            _miniFab(
+              context,
+              icon: Icons.add_location_alt,
+              label: 'Nova Obra',
+              onPressed: () => Navigator.pushNamed(context, '/cadastro/obra'),
+            ),
+            SizedBox(height: 8),
+            _miniFab(
+              context,
+              icon: Icons.person_add,
+              label: 'Novo Cliente',
+              onPressed: () => Navigator.pushNamed(context, '/cadastro/cliente'),
+            ),
+            SizedBox(height: 8),
+            _miniFab(
+              context,
+              icon: Icons.build,
+              label: 'Novo Serviço',
+              onPressed: () => Navigator.pushNamed(context, '/cadastro/servico'),
+            ),
+            SizedBox(height: 8),
+          ],
+          FloatingActionButton(
+            heroTag: 'toggle_fab',
+            onPressed: () {
+              setState(() {
+                mostrarBotoes = !mostrarBotoes;
+              });
+            },
+            child: Icon(Icons.menu),
+            tooltip: mostrarBotoes ? 'Esconder ações' : 'Mostrar ações',
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildExpandableFab(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        _miniFab(
-          context,
-          icon: Icons.add_location_alt,
-          label: 'Nova Obra',
-          onPressed: () => Navigator.pushNamed(context, '/cadastro/obra'),
-        ),
-        SizedBox(height: 8),
-        _miniFab(
-          context,
-          icon: Icons.person_add,
-          label: 'Novo Cliente',
-          onPressed: () => Navigator.pushNamed(context, '/cadastro/cliente'),
-        ),
-        SizedBox(height: 8),
-        _miniFab(
-          context,
-          icon: Icons.build,
-          label: 'Novo Serviço',
-          onPressed: () => Navigator.pushNamed(context, '/cadastro/servico'),
-        ),
-        SizedBox(height: 8),
-        FloatingActionButton(
-          heroTag: 'main_fab',
-          onPressed: () {},
-          child: Icon(Icons.add),
-          tooltip: 'Ações',
-        ),
-      ],
-    );
-  }
-
-  Widget _miniFab(BuildContext context, {required IconData icon, required String label, required VoidCallback onPressed}) {
+  Widget _miniFab(BuildContext context,
+      {required IconData icon,
+      required String label,
+      required VoidCallback onPressed}) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
