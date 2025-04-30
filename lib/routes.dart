@@ -8,6 +8,7 @@ import 'screens/obra_detalhe_page.dart';
 import 'screens/cadastro/cadastro_obra_page.dart';
 import 'screens/cadastro/cadastro_cliente_page.dart';
 import 'screens/cadastro/cadastro_servico_page.dart';
+import 'screens/cadastro/cadastro_usuario_page.dart';
 
 final Map<String, WidgetBuilder> appRoutes = {
   '/': (context) => SplashScreen(),
@@ -18,4 +19,5 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/cadastro/obra': (context) => CadastroObraPage(),
   '/cadastro/cliente': (context) => CadastroClientePage(),
   '/cadastro/servico': (context) => CadastroServicoPage(),
+  '/cadastro/usuario': (context) => CadastroUsuarioPage(),
 };

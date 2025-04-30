@@ -22,6 +22,10 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  void _irParaCadastro() {
+    Navigator.pushNamed(context, '/cadastro/usuario');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +47,15 @@ class _LoginPageState extends State<LoginPage> {
               decoration: InputDecoration(labelText: 'Senha'),
               obscureText: true,
             ),
-            SizedBox(height: 32),
+            SizedBox(height: 16),
+            TextButton(
+              onPressed: _irParaCadastro,
+              child: Text(
+                'Não possui cadastro? Cadastre-se aqui',
+                style: TextStyle(color: Colors.blue),
+              ),
+            ),
+            SizedBox(height: 16),
             ElevatedButton(
               onPressed: _login,
               child: Text('Entrar'),
