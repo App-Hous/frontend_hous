@@ -7,6 +7,8 @@ void main() {
 }
 
 class ConstrApp extends StatelessWidget {
+  const ConstrApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -19,12 +21,10 @@ class ConstrApp extends StatelessWidget {
           primary: const Color(0xFF2C3E50),
           secondary: const Color(0xFF34495E),
           surface: Colors.white,
-          background: Colors.grey[50],
           error: const Color(0xFFE74C3C),
           onPrimary: Colors.white,
           onSecondary: Colors.white,
           onSurface: const Color(0xFF2C3E50),
-          onBackground: const Color(0xFF2C3E50),
           onError: Colors.white,
         ),
         appBarTheme: AppBarTheme(

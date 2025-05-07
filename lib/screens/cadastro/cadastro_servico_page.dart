@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CadastroServicoPage extends StatefulWidget {
+  const CadastroServicoPage({super.key});
+
   @override
   _CadastroServicoPageState createState() => _CadastroServicoPageState();
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class ObraDetalhePage extends StatefulWidget {
+  const ObraDetalhePage({super.key});
+
   @override
   _ObraDetalhePageState createState() => _ObraDetalhePageState();
 }

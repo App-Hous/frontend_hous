@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CadastroObraPage extends StatefulWidget {
+  const CadastroObraPage({super.key});
+
   @override
   _CadastroObraPageState createState() => _CadastroObraPageState();
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CadastroUsuarioPage extends StatefulWidget {
+  const CadastroUsuarioPage({super.key});
+
   @override
   _CadastroUsuarioPageState createState() => _CadastroUsuarioPageState();
 }
