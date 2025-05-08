@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/cliente_service.dart';
 
 class ObraDetalhePage extends StatefulWidget {
   const ObraDetalhePage({super.key});
@@ -12,34 +13,46 @@ class _ObraDetalhePageState extends State<ObraDetalhePage> {
   final TextEditingController enderecoController = TextEditingController();
   String? clienteSelecionadoId;
 
-  List<Map<String, String>> clientes = [
-    {'id': '1', 'nome': 'Cliente A'},
-    {'id': '2', 'nome': 'Cliente B'},
-  ];
+  List<Map<String, dynamic>> clientes = [];
+  List<Map<String, dynamic>> servicos = [];
 
-  List<Map<String, String>> servicos = [
-    {'titulo': 'Fundação', 'descricao': '50% concluído'},
-    {'titulo': 'Alvenaria', 'descricao': 'Em andamento'},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _carregarClientes();
+  }
+
+  void _carregarClientes() async {
+    try {
+      final lista = await ClienteService.getClientes();
+      setState(() => clientes = lista);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao carregar clientes: \$e')),
+      );
+    }
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final Map<String, String> obra = ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+    final Map<String, dynamic> obra = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     nomeController.text = obra['nome'] ?? '';
     enderecoController.text = obra['endereco'] ?? '';
-    clienteSelecionadoId = '1'; // Simulação inicial
+    clienteSelecionadoId = obra['cliente_id']?.toString();
+    if (obra.containsKey('servicos')) {
+      servicos = List<Map<String, dynamic>>.from(obra['servicos']);
+    }
   }
 
   void _salvarAlteracoes() {
-    // Aqui você enviaria as alterações para a API futuramente
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Alterações salvas (simulação).')),
     );
   }
 
   void _editarServico(int index) async {
-    final tituloController = TextEditingController(text: servicos[index]['titulo']);
+    final tituloController = TextEditingController(text: servicos[index]['nome']);
     final descricaoController = TextEditingController(text: servicos[index]['descricao']);
 
     await showDialog(
@@ -54,12 +67,13 @@ class _ObraDetalhePageState extends State<ObraDetalhePage> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancelar')),
-          ElevatedButton(
+          TextButton(
             onPressed: () {
               setState(() {
-                servicos[index]['titulo'] = tituloController.text;
-                servicos[index]['descricao'] = descricaoController.text;
+                servicos[index] = {
+                  'nome': tituloController.text,
+                  'descricao': descricaoController.text,
+                };
               });
               Navigator.pop(context);
             },
@@ -88,36 +102,32 @@ class _ObraDetalhePageState extends State<ObraDetalhePage> {
               decoration: InputDecoration(labelText: 'Endereço'),
             ),
             DropdownButtonFormField<String>(
+              decoration: InputDecoration(labelText: 'Cliente'),
               value: clienteSelecionadoId,
-              decoration: InputDecoration(labelText: 'Cliente Responsável'),
-              items: clientes.map((c) => DropdownMenuItem(
-                value: c['id'],
-                child: Text(c['nome']!),
-              )).toList(),
-              onChanged: (val) => setState(() => clienteSelecionadoId = val),
+              items: clientes.map((cliente) {
+                return DropdownMenuItem(
+                  value: cliente['id'].toString(),
+                  child: Text(cliente['nome']),
+                );
+              }).toList(),
+              onChanged: (value) => setState(() => clienteSelecionadoId = value),
             ),
             SizedBox(height: 24),
-            Text('Serviços', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Expanded(
-              child: ListView.builder(
-                itemCount: servicos.length,
-                itemBuilder: (context, index) {
-                  final servico = servicos[index];
-                  return ListTile(
-                    title: Text(servico['titulo']!),
-                    subtitle: Text(servico['descricao']!),
-                    trailing: IconButton(
-                      icon: Icon(Icons.edit),
-                      onPressed: () => _editarServico(index),
-                    ),
-                  );
-                },
-              ),
-            ),
-            ElevatedButton.icon(
+            Text('Serviços', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ...servicos.asMap().entries.map((entry) {
+              final index = entry.key;
+              final servico = entry.value;
+              return ListTile(
+                title: Text(servico['nome'] ?? ''),
+                subtitle: Text(servico['descricao'] ?? ''),
+                trailing: Icon(Icons.edit),
+                onTap: () => _editarServico(index),
+              );
+            }),
+            SizedBox(height: 24),
+            ElevatedButton(
               onPressed: _salvarAlteracoes,
-              icon: Icon(Icons.save),
-              label: Text('Salvar Alterações'),
+              child: Text('Salvar Alterações'),
             ),
           ],
         ),

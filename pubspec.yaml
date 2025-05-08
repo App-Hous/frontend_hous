@@ -39,6 +39,7 @@ dependencies:
   flutter_svg: ^2.0.9
   cached_network_image: ^3.3.0
   flutter_staggered_animations: ^1.1.1
+  shared_preferences: ^2.0.15
 
 dev_dependencies:
   flutter_test:

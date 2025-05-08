@@ -1,36 +1,35 @@
 import 'package:flutter/material.dart';
-import 'custom_bottom_nav.dart';
-import 'custom_app_bar.dart';
 
 class CustomScaffold extends StatelessWidget {
-  final String titulo;
-  final Widget corpo;
-  final List<Widget>? acoes;
-  final bool mostrarNavInferior;
-  final int indiceAtual;
-  final Function(int)? aoClicarNav;
+  final Widget body;
+  final int currentIndex;
+  final void Function(int) onTabTapped; // Removido o ? para garantir função obrigatória
 
   const CustomScaffold({
     Key? key,
-    required this.titulo,
-    required this.corpo,
-    this.acoes,
-    this.mostrarNavInferior = true,
-    this.indiceAtual = 0,
-    this.aoClicarNav,
+    required this.body,
+    required this.currentIndex,
+    required this.onTabTapped,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: titulo, actions: acoes),
-      body: SafeArea(
-        child: Padding(padding: const EdgeInsets.all(16.0), child: corpo),
+      body: body,
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: onTabTapped, // Corrigido tipo esperado
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Início',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Perfil',
+          ),
+        ],
       ),
-      bottomNavigationBar:
-          mostrarNavInferior
-              ? CustomBottomNav(currentIndex: indiceAtual, onTap: aoClicarNav)
-              : null,
     );
   }
 }

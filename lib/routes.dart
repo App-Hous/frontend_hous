@@ -26,4 +26,6 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/cadastro/cliente': (context) => CadastroClientePage(),
   '/cadastro/servico': (context) => CadastroServicoPage(),
   '/cadastro/usuario': (context) => CadastroUsuarioPage(),
+  '/obras/nova': (context) => CadastroObraPage(),
+
 };
