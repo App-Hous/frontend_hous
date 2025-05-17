@@ -1,15 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:shimmer/shimmer.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:intl/intl.dart';
-import '../../components/CustomListItem.dart';
-import '../../components/CustomSearchBar.dart';
-import '../../components/CustomFilterChip.dart';
-import '../../components/StatusCard.dart';
 import '../../services/project_service.dart';
+import 'obra_visualizar_page.dart';
+
 
 class ListaObrasPage extends StatefulWidget {
   const ListaObrasPage({super.key});
@@ -51,39 +44,102 @@ class _ListaObrasPageState extends State<ListaObrasPage> {
     return obras.where((obra) => obra['status'] == _filtroAtual).toList();
   }
 
+  String traduzirStatus(String status) {
+    switch (status) {
+      case 'planning':
+        return 'Planejamento';
+      case 'in_progress':
+        return 'Em andamento';
+      case 'finished':
+        return 'Concluído';
+      default:
+        return 'Indefinido';
+    }
+  }
+
+  Color corStatus(String status) {
+    switch (status) {
+      case 'planning':
+        return Colors.orange;
+      case 'in_progress':
+        return Colors.blue;
+      case 'finished':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Obras'),
+        title: const Text('Obras'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/home', // certifique-se que esta rota está definida no MaterialApp
+              (route) => false,
+            );
+          },
+        ),
         actions: [
           PopupMenuButton<String>(
-            icon: Icon(Icons.filter_list),
+            icon: const Icon(Icons.filter_list),
             onSelected: (value) => setState(() => _filtroAtual = value),
-            itemBuilder: (context) => _filtros.map((f) => PopupMenuItem(value: f, child: Text(f))).toList(),
+            itemBuilder: (context) =>
+                _filtros.map((f) => PopupMenuItem(value: f, child: Text(f))).toList(),
           ),
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : obrasFiltradas.isEmpty
-              ? Center(child: Text('Nenhuma obra encontrada'))
+              ? const Center(child: Text('Nenhuma obra encontrada'))
               : ListView.builder(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   itemCount: obrasFiltradas.length,
                   itemBuilder: (context, index) {
                     final obra = obrasFiltradas[index];
+                    final status = obra['status'] ?? 'unknown';
                     return Card(
-                      margin: EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 3,
+                      margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
-                        title: Text(obra['nome'] ?? 'Sem nome'),
-                        subtitle: Text(obra['endereco'] ?? 'Sem endereço'),
-                        trailing: Icon(Icons.arrow_forward_ios),
+                        contentPadding: const EdgeInsets.all(16),
+                        title: Text(
+                          obra['name'] ?? 'Sem nome',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            Text("📍 ${obra['address'] ?? 'Sem endereço'}"),
+                            const SizedBox(height: 4),
+                            Text(
+                              "📌 ${traduzirStatus(status)}",
+                              style: TextStyle(
+                                color: corStatus(status),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "💰 Orçamento: ${currencyFormat.format(obra['budget'] ?? 0)}",
+                            ),
+                          ],
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () {
-                          Navigator.pushNamed(
+                          Navigator.push(
                             context,
-                            '/obra/detalhe',
-                            arguments: obra,
+                            MaterialPageRoute(
+                              builder: (_) => ObraVisualizarPage(obra: obra),
+                            ),
                           );
                         },
                       ),
@@ -92,7 +148,7 @@ class _ListaObrasPageState extends State<ListaObrasPage> {
                 ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.pushNamed(context, '/obras/nova'),
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
         backgroundColor: Theme.of(context).primaryColor,
       ),
     );

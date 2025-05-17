@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../services/project_service.dart';
+import 'obras/obra_visualizar_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -178,10 +179,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       scrollDirection: Axis.horizontal,
                       padding: EdgeInsets.symmetric(horizontal: 16),
                       children: [
-                        _buildKPICard('Obras em andamento', '$obrasAndamento obras', Icons.construction, Colors.blue),
-                        _buildKPICard('Entregas esta semana', '$entregasSemana obras', Icons.calendar_today, Colors.green),
+                        _buildKPICard('Obras em andamento', '\$obrasAndamento obras', Icons.construction, Colors.blue),
+                        _buildKPICard('Entregas esta semana', '\$entregasSemana obras', Icons.calendar_today, Colors.green),
                         _buildKPICard('Total gasto este mês', currencyFormat.format(totalGastoMes), Icons.payments, Colors.orange),
-                        _buildKPICard('Gastos acima do orçamento', '$orcamentoEstourado obras', Icons.warning, Colors.red),
+                        _buildKPICard('Gastos acima do orçamento', '\$orcamentoEstourado obras', Icons.warning, Colors.red),
                       ],
                     ),
                   ),
@@ -246,10 +247,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   ],
                                 ),
                               ),
-                            ).animate().fadeIn().scale(
-                                  begin: Offset(0.8, 0.8),
-                                  end: Offset(1, 1),
-                                );
+                            ).animate().fadeIn().scale(begin: Offset(0.8, 0.8), end: Offset(1, 1));
                           },
                         ),
                       ],
@@ -273,11 +271,71 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final obra = projetos[index];
-                      return ListTile(
-                        title: Text(obra['nome'] ?? 'Sem nome'),
-                        subtitle: Text(obra['endereco'] ?? 'Sem endereço'),
-                        trailing: Icon(Icons.arrow_forward_ios),
-                        onTap: () => Navigator.pushNamed(context, '/obras/lista', arguments: obra),
+                      final status = obra['status'] ?? 'unknown';
+
+                      Color corStatus(String status) {
+                        switch (status) {
+                          case 'planning':
+                            return Colors.orange;
+                          case 'in_progress':
+                            return Colors.blue;
+                          case 'finished':
+                            return Colors.green;
+                          default:
+                            return Colors.grey;
+                        }
+                      }
+
+                      String traduzirStatus(String status) {
+                        switch (status) {
+                          case 'planning':
+                            return 'Planejamento';
+                          case 'in_progress':
+                            return 'Em andamento';
+                          case 'finished':
+                            return 'Concluído';
+                          default:
+                            return 'Indefinido';
+                        }
+                      }
+
+                      return Card(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 3,
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(16),
+                          title: Text(
+                            obra['name'] ?? 'Sem nome',
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 8),
+                              Text("📍 ${obra['address'] ?? 'Sem endereço'}"),
+                              const SizedBox(height: 4),
+                              Text(
+                                "📌 ${traduzirStatus(status)}",
+                                style: TextStyle(
+                                  color: corStatus(status),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text("💰 Orçamento: ${currencyFormat.format(obra['budget'] ?? 0)}"),
+                            ],
+                          ),
+                          trailing: const Icon(Icons.arrow_forward_ios),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ObraVisualizarPage(obra: obra),
+                              ),
+                            );
+                          },
+                        ),
                       );
                     },
                     childCount: projetos.length,

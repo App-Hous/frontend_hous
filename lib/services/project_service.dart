@@ -73,8 +73,93 @@ class ProjectService {
     }
   }
 
+  static Future<void> updateProject({
+    required int id,
+    required String nome,
+    required String descricao,
+    required String endereco,
+    required String cidade,
+    required String estado,
+    required String cep,
+    required double areaTotal,
+    required double orcamento,
+    required DateTime dataInicio,
+    required DateTime dataFimPrevista,
+    required DateTime dataFimReal,
+    required String status,
+    required int companyId,
+    required int managerId,
+  }) async {
+    final token = await _getToken();
+    final url = Uri.parse('$baseUrl/api/v1/projects/$id');
+    print('>>> Atualizando obra:');
+print(jsonEncode({
+  'name': nome,
+  'description': descricao,
+  'address': endereco,
+  'city': cidade,
+  'state': estado,
+  'zip_code': cep,
+  'total_area': areaTotal,
+  'budget': orcamento,
+  'start_date': dataInicio.toIso8601String().split("T")[0],
+  'expected_end_date': dataFimPrevista.toIso8601String().split("T")[0],
+  'actual_end_date': dataFimReal.toIso8601String().split("T")[0],
+  'status': status,
+  'company_id': companyId,
+  'manager_id': managerId,
+}));
+
+
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'name': nome,
+        'description': descricao,
+        'address': endereco,
+        'city': cidade,
+        'state': estado,
+        'zip_code': cep,
+        'total_area': areaTotal,
+        'budget': orcamento,
+        'start_date': dataInicio.toIso8601String().split("T")[0],
+        'expected_end_date': dataFimPrevista.toIso8601String().split("T")[0],
+        'actual_end_date': dataFimReal.toIso8601String().split("T")[0],
+        'status': status,
+        'company_id': companyId,
+        'manager_id': managerId,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      final erro = jsonDecode(response.body);
+      throw Exception(erro['detail'] ?? 'Erro ao atualizar projeto.');
+    }
+  }
+
   static Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
+
+  static Future<void> deleteProject(int id) async {
+  final token = await _getToken();
+  final url = Uri.parse('$baseUrl/api/v1/projects/$id');
+
+  final response = await http.delete(
+    url,
+    headers: {
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode != 200 && response.statusCode != 204) {
+    throw Exception('Erro ao deletar projeto: ${response.body}');
+  }
+}
+
 }
