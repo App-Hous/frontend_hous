@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../services/cliente_service.dart';
 
 class CadastroClientePage extends StatefulWidget {
+  const CadastroClientePage({super.key});
+
   @override
   _CadastroClientePageState createState() => _CadastroClientePageState();
 }
@@ -10,14 +13,28 @@ class _CadastroClientePageState extends State<CadastroClientePage> {
   final TextEditingController telefoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
 
-  void _salvarCliente() {
+  bool carregando = false;
+
+  void _salvarCliente() async {
     String nome = nomeController.text.trim();
     String telefone = telefoneController.text.trim();
     String email = emailController.text.trim();
 
     if (nome.isNotEmpty && telefone.isNotEmpty && email.isNotEmpty) {
-      // Aqui futuramente enviaremos os dados para a API
-      Navigator.pop(context);
+      setState(() => carregando = true);
+      try {
+        await ClienteService.criarCliente(nome, telefone, email);
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Cliente criado com sucesso!')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao criar cliente: \$e')),
+        );
+      } finally {
+        setState(() => carregando = false);
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Preencha todos os campos')),
@@ -48,10 +65,12 @@ class _CadastroClientePageState extends State<CadastroClientePage> {
               keyboardType: TextInputType.emailAddress,
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _salvarCliente,
-              child: Text('Salvar'),
-            ),
+            carregando
+                ? CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _salvarCliente,
+                    child: Text('Salvar'),
+                  ),
           ],
         ),
       ),
