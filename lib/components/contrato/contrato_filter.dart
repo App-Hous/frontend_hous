@@ -23,25 +23,49 @@ class ContratoFilter extends StatelessWidget {
         itemBuilder: (context, index) {
           final filtro = filtros[index];
           final isSelected = filtro == filtroAtual;
+
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
-              label: Text(filtro),
+              label: Text(_formatStatus(filtro)),
               selected: isSelected,
-              onSelected: (selected) => onFiltroChanged(filtro),
-              backgroundColor: Colors.white,
-              selectedColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              onSelected: (selected) {
+                if (selected) {
+                  onFiltroChanged(filtro);
+                }
+              },
+              backgroundColor: Colors.grey[200],
+              selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
               checkmarkColor: Theme.of(context).primaryColor,
               labelStyle: TextStyle(
-                color:
-                    isSelected
-                        ? Theme.of(context).primaryColor
-                        : Colors.grey[600],
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : Colors.grey[800],
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           );
         },
       ),
     );
+  }
+
+  String _formatStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'todos':
+        return 'Todos';
+      case 'active':
+        return 'Ativos';
+      case 'pending':
+        return 'Pendentes';
+      case 'completed':
+        return 'Concluídos';
+      case 'cancelled':
+        return 'Cancelados';
+      case 'expired':
+        return 'Vencidos';
+      default:
+        return status;
+    }
   }
 }

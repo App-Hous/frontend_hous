@@ -6,7 +6,7 @@ class ContratoCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const ContratoCard({Key? key, required this.contrato, required this.onTap})
-    : super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +19,12 @@ class ContratoCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               _buildHeader(context),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _buildInfoRows(context),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _buildDates(context),
             ],
           ),
@@ -47,51 +48,59 @@ class ContratoCard extends StatelessWidget {
             size: 24,
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                contrato['numero'],
+                (contrato['contract_number']?.toString() ?? '-'),
                 style: Theme.of(context).textTheme.titleLarge,
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
-                contrato['tipo'],
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                _traduzirTipo(contrato['type']?.toString()),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: Colors.grey[600]),
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
         ),
-        ContratoStatus(status: contrato['status']),
+        ContratoStatus(status: contrato['status'] ?? 'Não especificado'),
       ],
     );
   }
 
   Widget _buildInfoRows(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         _buildInfoRow(
           context,
           'Cliente',
-          contrato['cliente'],
+          (contrato['client_name']?.toString() ??
+              contrato['client_id']?.toString() ??
+              '-'),
           Icons.person_outline,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         _buildInfoRow(
           context,
           'Imóvel',
-          contrato['imovel'],
+          (contrato['property_name']?.toString() ??
+              contrato['property_id']?.toString() ??
+              '-'),
           Icons.home_outlined,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         _buildInfoRow(
           context,
           'Valor',
-          'R\$ ${contrato['valor'].toStringAsFixed(2)}',
+          _formatarValor(contrato['contract_value']),
           Icons.attach_money,
         ),
       ],
@@ -101,24 +110,30 @@ class ContratoCard extends StatelessWidget {
   Widget _buildInfoRow(
     BuildContext context,
     String label,
-    String value,
+    dynamic value,
     IconData icon,
   ) {
+    final safeValue = value?.toString() ?? '-';
     return Row(
       children: [
         Icon(icon, size: 16, color: Colors.grey[600]),
         const SizedBox(width: 8),
         Text(
           '$label: ',
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: Colors.grey[600]),
         ),
-        Text(
-          value,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+        Expanded(
+          child: Text(
+            safeValue,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(fontWeight: FontWeight.w500),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
@@ -128,8 +143,23 @@ class ContratoCard extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildDateInfo(context, 'Início', contrato['dataInicio']),
-        _buildDateInfo(context, 'Término', contrato['dataFim']),
+        Expanded(
+          child: _buildDateInfo(
+            context,
+            'Início',
+            contrato['signing_date']?.toString().split('T')[0] ??
+                'Não especificada',
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildDateInfo(
+            context,
+            'Término',
+            contrato['expiration_date']?.toString().split('T')[0] ??
+                'Não especificada',
+          ),
+        ),
       ],
     );
   }
@@ -140,18 +170,44 @@ class ContratoCard extends StatelessWidget {
       children: [
         Text(
           label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+          style: Theme.of(context)
+              .textTheme
+              .bodySmall
+              ?.copyWith(color: Colors.grey[600]),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           date,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(fontWeight: FontWeight.w500),
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
+  }
+
+  String _formatarValor(dynamic valor) {
+    if (valor == null) return 'R\$ 0,00';
+    final number = double.tryParse(valor.toString()) ?? 0.0;
+    return 'R\$ ' +
+        number.toStringAsFixed(2).replaceAll('.', ',').replaceAllMapped(
+            RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+  }
+
+  String _traduzirTipo(String? type) {
+    switch (type) {
+      case 'sale':
+        return 'Venda';
+      case 'rental':
+        return 'Aluguel';
+      case 'lease':
+        return 'Arrendamento';
+      case 'other':
+        return 'Outro';
+      default:
+        return type ?? 'Tipo não especificado';
+    }
   }
 }

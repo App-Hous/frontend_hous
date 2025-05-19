@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../components/contrato/contrato_card.dart';
 import '../../components/contrato/contrato_filter.dart';
+import '../../services/contract_service.dart';
+import '../../services/cliente_service.dart';
+import '../../services/servico_service.dart';
 
 class ListaContratosPage extends StatefulWidget {
   const ListaContratosPage({super.key});
@@ -10,63 +13,86 @@ class ListaContratosPage extends StatefulWidget {
 }
 
 class _ListaContratosPageState extends State<ListaContratosPage> {
-  // Dados de exemplo - depois serão substituídos pelos dados reais
-  final List<Map<String, dynamic>> contratos = [
-    {
-      'numero': 'CT-2024-001',
-      'tipo': 'Construção',
-      'cliente': 'João Silva',
-      'imovel': 'Residência A',
-      'dataInicio': '2024-01-15',
-      'dataFim': '2024-07-15',
-      'valor': 250000.00,
-      'status': 'Em Andamento',
-    },
-    {
-      'numero': 'CT-2024-002',
-      'tipo': 'Reforma',
-      'cliente': 'Maria Santos',
-      'imovel': 'Comercial B',
-      'dataInicio': '2024-02-01',
-      'dataFim': '2024-04-01',
-      'valor': 120000.00,
-      'status': 'Pendente',
-    },
-    {
-      'numero': 'CT-2023-015',
-      'tipo': 'Construção',
-      'cliente': 'Pedro Oliveira',
-      'imovel': 'Residência C',
-      'dataInicio': '2023-11-01',
-      'dataFim': '2024-05-01',
-      'valor': 350000.00,
-      'status': 'Concluído',
-    },
+  List<Map<String, dynamic>> _contratos = [];
+  bool _isLoading = true;
+  String? _error;
+  String _filtroAtual = 'todos';
+  final List<String> _filtros = [
+    'todos',
+    'active',
+    'pending',
+    'completed',
+    'cancelled',
+    'expired',
   ];
 
-  String _filtroAtual = 'Todos';
-  final List<String> _filtros = [
-    'Todos',
-    'Em Andamento',
-    'Pendente',
-    'Concluído',
-    'Vencido',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadContratos();
+  }
+
+  Future<void> _loadContratos() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+
+      final contratos = await ContractService.getContracts();
+      final clientes = await ClienteService.getClientes();
+      final imoveis = await ServicoService.getServicos();
+
+      // Mapear IDs para nomes
+      final clientesMap = {for (var c in clientes) c['id']: c['name']};
+      final imoveisMap = {for (var i in imoveis) i['id']: i['name']};
+
+      // Adicionar nomes aos contratos
+      for (var contrato in contratos) {
+        contrato['client_name'] = clientesMap[contrato['client_id']];
+        contrato['property_name'] = imoveisMap[contrato['property_id']];
+      }
+
+      setState(() {
+        _contratos = contratos;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<Map<String, dynamic>> _getContratosFiltrados() {
+    if (_filtroAtual == 'todos') {
+      return _contratos;
+    }
+    return _contratos.where((contrato) {
+      final status = contrato['status']?.toString().toLowerCase() ?? '';
+      return status == _filtroAtual.toLowerCase();
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Contratos', style: Theme.of(context).textTheme.headlineSmall),
             Text(
               'Gerencie seus contratos',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                  ),
             ),
           ],
         ),
@@ -85,40 +111,92 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Filtros
-          ContratoFilter(
-            filtroAtual: _filtroAtual,
-            filtros: _filtros,
-            onFiltroChanged: (filtro) {
-              setState(() {
-                _filtroAtual = filtro;
-              });
-            },
-          ),
-          // Lista de Contratos
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: contratos.length,
-              itemBuilder: (context, index) {
-                final contrato = contratos[index];
-                return ContratoCard(
-                  contrato: contrato,
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/contratos/detalhes',
-                      arguments: contrato,
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Erro ao carregar contratos',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _error!,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.red,
+                            ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadContratos,
+                        child: const Text('Tentar novamente'),
+                      ),
+                    ],
+                  ),
+                )
+              : Column(
+                  children: [
+                    // Filtros
+                    ContratoFilter(
+                      filtroAtual: _filtroAtual,
+                      filtros: _filtros,
+                      onFiltroChanged: (filtro) {
+                        setState(() {
+                          _filtroAtual = filtro;
+                        });
+                      },
+                    ),
+                    // Lista de Contratos
+                    Expanded(
+                      child: RefreshIndicator(
+                        onRefresh: _loadContratos,
+                        child: _contratos.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Nenhum contrato encontrado',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.pushNamed(
+                                            context, '/contratos/novo');
+                                      },
+                                      child: const Text('Criar novo contrato'),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : ListView.builder(
+                                padding: const EdgeInsets.all(16),
+                                itemCount: _getContratosFiltrados().length,
+                                itemBuilder: (context, index) {
+                                  final contrato =
+                                      _getContratosFiltrados()[index];
+                                  return ContratoCard(
+                                    contrato: contrato,
+                                    onTap: () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        '/contratos/detalhes',
+                                        arguments: contrato,
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(context, '/contratos/novo');

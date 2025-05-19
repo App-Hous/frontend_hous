@@ -16,7 +16,7 @@ class ContratoStatus extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        status,
+        _formatStatus(status),
         style: TextStyle(
           color: color,
           fontSize: 12,
@@ -26,15 +26,34 @@ class ContratoStatus extends StatelessWidget {
     );
   }
 
+  String _formatStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'Ativo';
+      case 'pending':
+        return 'Pendente';
+      case 'completed':
+        return 'Concluído';
+      case 'cancelled':
+        return 'Cancelado';
+      case 'expired':
+        return 'Vencido';
+      default:
+        return status;
+    }
+  }
+
   (Color, Color) _getStatusColors(String status) {
-    switch (status) {
-      case 'Em Andamento':
+    switch (status.toLowerCase()) {
+      case 'active':
         return (Colors.green, Colors.green.withOpacity(0.1));
-      case 'Pendente':
+      case 'pending':
         return (Colors.orange, Colors.orange.withOpacity(0.1));
-      case 'Concluído':
+      case 'completed':
         return (Colors.blue, Colors.blue.withOpacity(0.1));
-      case 'Vencido':
+      case 'cancelled':
+        return (Colors.red, Colors.red.withOpacity(0.1));
+      case 'expired':
         return (Colors.red, Colors.red.withOpacity(0.1));
       default:
         return (Colors.grey, Colors.grey.withOpacity(0.1));
