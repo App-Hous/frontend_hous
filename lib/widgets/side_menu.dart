@@ -24,6 +24,13 @@ class SideMenu extends StatelessWidget {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.search),
+            title: const Text('Busca Avançada'),
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/contratos/lista');
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.dashboard),
             title: const Text('Dashboard'),
             onTap: () {

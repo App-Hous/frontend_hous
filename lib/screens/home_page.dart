@@ -12,7 +12,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   List<Map<String, dynamic>> projetos = [];
   bool carregando = true;
   int obrasAndamento = 0;
@@ -46,9 +47,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       'rota': '/relatorios',
     },
     {
-      'titulo': 'Buscar Contrato',
+      'titulo': 'Buscar Contratos',
+      'descricao': 'Pesquise seus contratos',
       'icone': Icons.search,
-      'rota': '/contratos/buscar',
+      'rota': '/contratos/lista',
     },
     {
       'titulo': 'Calendário',
@@ -80,12 +82,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         final gasto = (p['gastoAtual'] ?? 0).toDouble();
         final orcamento = (p['orcamento'] ?? 0).toDouble();
 
-        final inicio = DateTime.tryParse(p['dataInicio'] ?? '') ?? DateTime(2000);
-        final entrega = DateTime.tryParse(p['dataPrevista'] ?? '') ?? DateTime(2100);
+        final inicio =
+            DateTime.tryParse(p['dataInicio'] ?? '') ?? DateTime(2000);
+        final entrega =
+            DateTime.tryParse(p['dataPrevista'] ?? '') ?? DateTime(2100);
 
         if (status == 'Em Andamento') andamento++;
         if (entrega.isAfter(hoje) && entrega.isBefore(fimSemana)) entregas++;
-        if (inicio.month == hoje.month && inicio.year == hoje.year) totalMes += gasto;
+        if (inicio.month == hoje.month && inicio.year == hoje.year)
+          totalMes += gasto;
         if (gasto > orcamento) estourados++;
       }
 
@@ -120,7 +125,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   backgroundColor: Colors.white,
                   elevation: 0,
                   flexibleSpace: FlexibleSpaceBar(
-                    titlePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    titlePadding:
+                        EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     title: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -128,12 +134,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         Row(
                           children: [
                             Text('Olá, Engenheiro João ',
-                              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600])),
+                                style: GoogleFonts.poppins(
+                                    fontSize: 14, color: Colors.grey[600])),
                             Text('👷‍♂️', style: TextStyle(fontSize: 16)),
                           ],
                         ),
-                        Text(dateFormat.format(DateTime.now()),
-                          style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+                        Text(
+                          dateFormat.format(DateTime.now()),
+                          style: GoogleFonts.poppins(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2C3E50)),
                         ),
                       ],
                     ),
@@ -144,7 +155,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       onPressed: () {},
                     ),
                     IconButton(
-                      icon: Icon(Icons.notifications_outlined, color: Color(0xFF2C3E50)),
+                      icon: Icon(Icons.notifications_outlined,
+                          color: Color(0xFF2C3E50)),
                       onPressed: () {},
                     ),
                     PopupMenuButton<String>(
@@ -162,11 +174,19 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       itemBuilder: (context) => [
                         PopupMenuItem(
                           value: 'perfil',
-                          child: Row(children: [Icon(Icons.person_outline), SizedBox(width: 8), Text('Perfil')]),
+                          child: Row(children: [
+                            Icon(Icons.person_outline),
+                            SizedBox(width: 8),
+                            Text('Perfil')
+                          ]),
                         ),
                         PopupMenuItem(
                           value: 'logout',
-                          child: Row(children: [Icon(Icons.logout), SizedBox(width: 8), Text('Sair')]),
+                          child: Row(children: [
+                            Icon(Icons.logout),
+                            SizedBox(width: 8),
+                            Text('Sair')
+                          ]),
                         ),
                       ],
                     ),
@@ -179,10 +199,26 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       scrollDirection: Axis.horizontal,
                       padding: EdgeInsets.symmetric(horizontal: 16),
                       children: [
-                        _buildKPICard('Obras em andamento', '\$obrasAndamento obras', Icons.construction, Colors.blue),
-                        _buildKPICard('Entregas esta semana', '\$entregasSemana obras', Icons.calendar_today, Colors.green),
-                        _buildKPICard('Total gasto este mês', currencyFormat.format(totalGastoMes), Icons.payments, Colors.orange),
-                        _buildKPICard('Gastos acima do orçamento', '\$orcamentoEstourado obras', Icons.warning, Colors.red),
+                        _buildKPICard(
+                            'Obras em andamento',
+                            '\$obrasAndamento obras',
+                            Icons.construction,
+                            Colors.blue),
+                        _buildKPICard(
+                            'Entregas esta semana',
+                            '\$entregasSemana obras',
+                            Icons.calendar_today,
+                            Colors.green),
+                        _buildKPICard(
+                            'Total gasto este mês',
+                            currencyFormat.format(totalGastoMes),
+                            Icons.payments,
+                            Colors.orange),
+                        _buildKPICard(
+                            'Gastos acima do orçamento',
+                            '\$orcamentoEstourado obras',
+                            Icons.warning,
+                            Colors.red),
                       ],
                     ),
                   ),
@@ -193,7 +229,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Ações Rápidas',
+                        Text(
+                          'Ações Rápidas',
                           style: GoogleFonts.poppins(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -204,7 +241,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         GridView.builder(
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 3,
                             childAspectRatio: 1,
                             crossAxisSpacing: 16,
@@ -214,7 +252,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           itemBuilder: (context, index) {
                             final acao = acoesRapidas[index];
                             return InkWell(
-                              onTap: () => Navigator.pushNamed(context, acao['rota']),
+                              onTap: () =>
+                                  Navigator.pushNamed(context, acao['rota']),
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white,
@@ -247,7 +286,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   ],
                                 ),
                               ),
-                            ).animate().fadeIn().scale(begin: Offset(0.8, 0.8), end: Offset(1, 1));
+                            ).animate().fadeIn().scale(
+                                begin: Offset(0.8, 0.8), end: Offset(1, 1));
                           },
                         ),
                       ],
@@ -300,14 +340,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       }
 
                       return Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         elevation: 3,
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(16),
                           title: Text(
                             obra['name'] ?? 'Sem nome',
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,7 +366,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text("💰 Orçamento: ${currencyFormat.format(obra['budget'] ?? 0)}"),
+                              Text(
+                                  "💰 Orçamento: ${currencyFormat.format(obra['budget'] ?? 0)}"),
                             ],
                           ),
                           trailing: const Icon(Icons.arrow_forward_ios),
@@ -372,9 +416,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         unselectedItemColor: Colors.grey,
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
-          BottomNavigationBarItem(icon: Icon(Icons.construction), label: 'Obras'),
-          BottomNavigationBarItem(icon: Icon(Icons.description), label: 'Contratos'),
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.construction), label: 'Obras'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.description), label: 'Contratos'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard), label: 'Dashboard'),
         ],
       ),
     );
