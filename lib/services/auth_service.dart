@@ -10,11 +10,11 @@ class AuthService {
     print('Enviando login para $url com $email e senha...');
 
     try {
-      // Convertendo o Map para formato x-www-form-urlencoded
-      final body = Uri(queryParameters: {
+      // Convertendo para formato form-urlencoded conforme esperado pelo FastAPI
+      final body = {
         'username': email,
         'password': senha,
-      }).query;
+      };
 
       final response = await http.post(
         url,
@@ -32,6 +32,15 @@ class AuthService {
         if (token != null) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('token', token);
+          
+          // Também vamos guardar o token de atualização, se disponível
+          if (data['refresh_token'] != null) {
+            await prefs.setString('refresh_token', data['refresh_token']);
+          }
+          
+          // Buscar dados do usuário após login bem-sucedido
+          await _getUserInfo(token);
+          
           print('Token salvo com sucesso: $token');
           return true;
         } else {
@@ -49,16 +58,47 @@ class AuthService {
     }
   }
 
+  static Future<void> _getUserInfo(String token) async {
+    try {
+      final url = Uri.parse('$baseUrl/api/v1/users/me');
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        final userData = jsonDecode(response.body);
+        final prefs = await SharedPreferences.getInstance();
+        
+        // Salvar informações do usuário
+        await prefs.setString('user_data', jsonEncode(userData));
+        print('Dados do usuário salvos: $userData');
+      }
+    } catch (e) {
+      print('Erro ao buscar dados do usuário: $e');
+    }
+  }
+
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
-    print('Token removido');
+    await prefs.remove('refresh_token');
+    await prefs.remove('user_data');
+    print('Dados de autenticação removidos');
   }
 
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
-    print('Token recuperado: $token');
     return token;
+  }
+  
+  static Future<Map<String, dynamic>?> getUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userData = prefs.getString('user_data');
+    if (userData != null) {
+      return jsonDecode(userData);
+    }
+    return null;
   }
 }
