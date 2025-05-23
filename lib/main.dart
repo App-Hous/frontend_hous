@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'routes.dart';
 import 'screens/splash_screen.dart';
+import 'screens/login_page.dart';
 
 void main() {
   runApp(ConstrApp());
@@ -14,6 +16,16 @@ class ConstrApp extends StatelessWidget {
     return MaterialApp(
       title: 'ConstrApp',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('pt', 'BR'),
+        const Locale('en', 'US'),
+      ],
+      locale: const Locale('pt', 'BR'),
       theme: ThemeData(
         primaryColor: const Color(0xFF2C3E50),
         scaffoldBackgroundColor: Colors.grey[50],
@@ -39,7 +51,7 @@ class ConstrApp extends StatelessWidget {
           ),
           actionsIconTheme: IconThemeData(color: Color(0xFF2C3E50)),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -107,7 +119,7 @@ class ConstrApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 12, color: Colors.grey[500]),
         ),
       ),
-      initialRoute: '/',
+      initialRoute: '/splash',
       routes: appRoutes,
     );
   }
