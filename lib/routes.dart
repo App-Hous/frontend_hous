@@ -15,6 +15,7 @@ import 'screens/cadastro/cadastro_obra_page.dart';
 import 'screens/cadastro/cadastro_cliente_page.dart';
 import 'screens/cadastro/cadastro_servico_page.dart';
 import 'screens/cadastro/cadastro_usuario_page.dart';
+import 'screens/cadastro/cadastro_gasto_page.dart';
 
 final Map<String, WidgetBuilder> appRoutes = {
   // Rotas principais
@@ -48,9 +49,12 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/cadastro/cliente': (context) => CadastroClientePage(),
   '/cadastro/servico': (context) => CadastroServicoPage(),
   '/cadastro/usuario': (context) => CadastroUsuarioPage(),
+  
+  // Rotas de Gastos
+  '/gastos/novo': (context) => CadastroGastoPage(),
+  '/gastos/lista': (context) => HomePage(), // Temporário, pode criar uma lista de gastos no futuro
 
   // Rotas temporárias (redirecionando para páginas existentes)
-  '/gastos/novo': (context) => CadastroObraPage(), // Temporário
   '/documentos/enviar': (context) => HomePage(), // Temporário
   '/calendario': (context) => HomePage(), // Temporário
   '/relatorios': (context) => HomePage(), // Temporário
