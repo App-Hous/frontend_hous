@@ -469,48 +469,6 @@ class _CadastroGastoPageState extends State<CadastroGastoPage> {
                   ),
                 ),
                 
-                // Comprovante
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: _selecionarComprovante,
-                        icon: Icon(Icons.upload_file),
-                        label: Text('Anexar Comprovante'),
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          side: BorderSide(color: Color(0xFF2C3E50)),
-                        ),
-                      ),
-                      if (comprovanteFile != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Row(
-                            children: [
-                              Icon(Icons.check_circle, color: Colors.green, size: 16),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Arquivo selecionado: ${comprovanteFile!.path.split('/').last}',
-                                  style: TextStyle(fontSize: 12),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.close, size: 16),
-                                padding: EdgeInsets.zero,
-                                constraints: BoxConstraints(),
-                                onPressed: () => setState(() => comprovanteFile = null),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                
                 // Mensagem de erro
                 if (mensagemErro != null)
                   Padding(

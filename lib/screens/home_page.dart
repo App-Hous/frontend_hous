@@ -52,6 +52,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       'rota': '/contratos/lista',
       'cor': Color(0xFF9B59B6),
     },
+    {
+      'titulo': 'Relatórios',
+      'icone': Icons.analytics_outlined,
+      'rota': '/dashboard',
+      'cor': Color(0xFFE67E22),
+    },
   ];
 
   // Função para obter a saudação baseada no horário
@@ -382,7 +388,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Ações Rápidas',
+                          Text(
+                            'Ações Rápidas',
                             style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -390,74 +397,65 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             ),
                           ),
                           SizedBox(height: 16),
-                          LayoutBuilder(
-                            builder: (context, constraints) {
-                              final isMobile = constraints.maxWidth < 600;
-                              final crossAxisCount = isMobile ? 3 : 4;
-                              
-                              return GridView.builder(
-                                shrinkWrap: true,
-                                physics: NeverScrollableScrollPhysics(),
-                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: crossAxisCount,
-                                  childAspectRatio: 1.1,
-                                  crossAxisSpacing: 12,
-                                  mainAxisSpacing: 12,
-                                ),
-                                itemCount: acoesRapidas.length,
-                                itemBuilder: (context, index) {
-                                  final acao = acoesRapidas[index];
-                                  return InkWell(
-                                    onTap: () => Navigator.pushNamed(context, acao['rota']),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(16),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: (acao['cor'] as Color? ?? Color(0xFF2C3E50)).withOpacity(0.2),
-                                            blurRadius: 10,
-                                            offset: Offset(0, 4),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.all(10),
-                                            decoration: BoxDecoration(
-                                              color: (acao['cor'] as Color? ?? Color(0xFF2C3E50)).withOpacity(0.1),
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                            child: Icon(
-                                              acao['icone'],
-                                              size: 28,
-                                              color: acao['cor'] as Color? ?? Color(0xFF2C3E50),
-                                            ),
-                                          ),
-                                          SizedBox(height: 8),
-                                          Padding(
-                                            padding: EdgeInsets.symmetric(horizontal: 4),
-                                            child: Text(
-                                              acao['titulo'],
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w500,
-                                                color: Color(0xFF2C3E50),
-                                              ),
-                                              textAlign: TextAlign.center,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                          SizedBox(
+                            height: 110,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: acoesRapidas.length,
+                              separatorBuilder: (context, index) => SizedBox(width: 16),
+                              itemBuilder: (context, index) {
+                                final acao = acoesRapidas[index];
+                                return InkWell(
+                                  onTap: () => Navigator.pushNamed(context, acao['rota']),
+                                  child: Container(
+                                    width: 110,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: (acao['cor'] as Color? ?? Color(0xFF2C3E50)).withOpacity(0.2),
+                                          blurRadius: 10,
+                                          offset: Offset(0, 4),
+                                        ),
+                                      ],
                                     ),
-                                  ).animate().fadeIn().scale(begin: Offset(0.8, 0.8), end: Offset(1, 1));
-                                },
-                              );
-                            }
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          padding: EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: (acao['cor'] as Color? ?? Color(0xFF2C3E50)).withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Icon(
+                                            acao['icone'],
+                                            size: 28,
+                                            color: acao['cor'] as Color? ?? Color(0xFF2C3E50),
+                                          ),
+                                        ),
+                                        SizedBox(height: 8),
+                                        Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: 4),
+                                          child: Text(
+                                            acao['titulo'],
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: Color(0xFF2C3E50),
+                                            ),
+                                            textAlign: TextAlign.center,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ).animate().fadeIn().scale(begin: Offset(0.8, 0.8), end: Offset(1, 1));
+                              },
+                            ),
                           ),
                         ],
                       ),
@@ -703,9 +701,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             case 2:
               Navigator.pushReplacementNamed(context, '/contratos/lista');
               break;
-            case 3:
-              Navigator.pushReplacementNamed(context, '/dashboard');
-              break;
           }
         },
         type: BottomNavigationBarType.fixed,
@@ -715,7 +710,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
           BottomNavigationBarItem(icon: Icon(Icons.construction), label: 'Obras'),
           BottomNavigationBarItem(icon: Icon(Icons.description), label: 'Contratos'),
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
         ],
       ),
     );

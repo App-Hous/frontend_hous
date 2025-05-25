@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../components/contrato/contrato_card.dart';
 import '../../components/contrato/contrato_filter.dart';
 import '../../components/contrato/contrato_search_field.dart';
@@ -101,140 +102,121 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: Color(0xFF2C3E50)),
           onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Contratos',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    )),
-            Text(
-              'Gerencie seus contratos',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-            ),
-          ],
+        title: Text(
+          'Contratos',
+          style: GoogleFonts.poppins(
+            color: Color(0xFF2C3E50),
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
-        actions: [
-          ContratoSearchField(
-            controller: _searchController,
-            isExpanded: _isSearchExpanded,
-            contracts: _contratos,
-            onResultsFiltered: (filteredResults) {
-              setState(() {
-                _contratos = filteredResults;
-              });
-            },
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value;
-              });
-            },
-            onSubmitted: (_) => _loadContratos(),
-            onToggle: () {
-              setState(() {
-                _isSearchExpanded = !_isSearchExpanded;
-                if (!_isSearchExpanded) {
-                  _searchController.clear();
-                  _searchQuery = '';
-                  _loadContratos();
-                }
-              });
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () {
-              _loadContratos();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Função de busca avançada foi removida'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-          ),
-        ],
+        centerTitle: false,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Erro ao carregar contratos',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _error!,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.red,
-                            ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadContratos,
-                        child: const Text('Tentar novamente'),
-                      ),
-                    ],
+      backgroundColor: Colors.grey[50],
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: ContratoFilter(
+                filtroAtual: _filtroAtual,
+                filtros: _filtros,
+                onFiltroChanged: (filtro) {
+                  setState(() {
+                    _filtroAtual = filtro;
+                  });
+                  _loadContratos();
+                },
+              ),
+            ),
+          ),
+          _isLoading
+              ? SliverFillRemaining(
+                  child: Center(
+                    child: CircularProgressIndicator(color: Color(0xFF2C3E50)),
                   ),
                 )
-              : Column(
-                  children: [
-                    // Filtros
-                    ContratoFilter(
-                      filtroAtual: _filtroAtual,
-                      filtros: _filtros,
-                      onFiltroChanged: (filtro) {
-                        setState(() {
-                          _filtroAtual = filtro;
-                        });
-                        _loadContratos();
-                      },
-                    ),
-                    // Lista de Contratos
-                    Expanded(
-                      child: RefreshIndicator(
-                        onRefresh: _loadContratos,
-                        child: _contratos.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Nenhum contrato encontrado',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge,
+              : _error != null
+                  ? SliverFillRemaining(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Erro ao carregar contratos',
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              _error!,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.red,
+                              ),
+                            ),
+                            SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadContratos,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color(0xFF2C3E50),
+                                foregroundColor: Colors.white,
+                              ),
+                              child: Text('Tentar novamente'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : SliverFillRemaining(
+                      child: _contratos.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.description, size: 64, color: Colors.grey[400]),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'Nenhum contrato encontrado',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 18,
+                                      color: Colors.grey[600],
                                     ),
-                                    const SizedBox(height: 16),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pushNamed(
-                                            context, '/contratos/novo');
-                                      },
-                                      child: const Text('Criar novo contrato'),
+                                  ),
+                                  SizedBox(height: 16),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pushNamed(context, '/contratos/novo');
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Color(0xFF2C3E50),
+                                      foregroundColor: Colors.white,
                                     ),
-                                  ],
-                                ),
-                              )
-                            : ListView.builder(
-                                padding: const EdgeInsets.all(16),
-                                itemCount: _contratos.length,
-                                itemBuilder: (context, index) {
-                                  final contrato = _contratos[index];
-                                  return ContratoCard(
+                                    child: Text('Criar novo contrato'),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              physics: NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              padding: const EdgeInsets.only(bottom: 80),
+                              itemCount: _contratos.length,
+                              itemBuilder: (context, index) {
+                                final contrato = _contratos[index];
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: ContratoCard(
                                     contrato: contrato,
                                     onTap: () {
                                       Navigator.pushNamed(
@@ -243,17 +225,18 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
                                         arguments: contrato,
                                       );
                                     },
-                                  );
-                                },
-                              ),
-                      ),
+                                  ),
+                                );
+                              },
+                            ),
                     ),
-                  ],
-                ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(context, '/contratos/novo');
         },
+        backgroundColor: Color(0xFF2C3E50),
         child: const Icon(Icons.add),
       ),
     );
