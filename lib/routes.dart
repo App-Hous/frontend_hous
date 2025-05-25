@@ -4,6 +4,7 @@ import 'package:frontend_hous/screens/contratos/cadastro_contrato_page.dart';
 import 'package:frontend_hous/screens/dashboard/dashboard_page.dart';
 import 'package:frontend_hous/screens/obras/lista_obras_page.dart';
 import 'package:frontend_hous/screens/contratos/detalhes_contrato_page.dart';
+import 'package:frontend_hous/screens/contracts/contract_search_page.dart';
 
 import 'screens/splash_screen.dart';
 import 'screens/login_page.dart';
@@ -36,6 +37,7 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/contracts/new': (context) => CadastroContratoPage(),
   '/contracts/details': (context) => DetalhesContratoPage(),
   '/contracts/edit': (context) => CadastroContratoPage(),
+  '/contracts/search': (context) => ListaContratosPage(),
 
   // Rotas de Obras
   '/obras/lista': (context) => ListaObrasPage(),

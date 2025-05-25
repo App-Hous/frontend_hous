@@ -5,11 +5,32 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ContractService {
   static const String baseUrl = 'http://localhost:8000';
 
-  static Future<List<Map<String, dynamic>>> getContracts() async {
+  static Future<List<Map<String, dynamic>>> getContracts({
+    String? search,
+    String? status,
+    String? type,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
     final token = await _getToken();
-    print('Token para requisição de contratos: $token');
 
-    final url = Uri.parse('$baseUrl/api/v1/contracts/');
+    // Build query parameters
+    final queryParams = <String, String>{};
+    if (search != null && search.isNotEmpty) {
+      queryParams['search'] = search;
+      queryParams['search_fields'] =
+          'title,contract_number,description,client_name,property_name';
+      queryParams['exact_match'] = 'false'; // Permitir busca parcial
+    }
+    if (status != null && status.isNotEmpty) queryParams['status'] = status;
+    if (type != null && type.isNotEmpty) queryParams['type'] = type;
+    if (startDate != null)
+      queryParams['start_date'] = startDate.toIso8601String().split('T')[0];
+    if (endDate != null)
+      queryParams['end_date'] = endDate.toIso8601String().split('T')[0];
+
+    final url = Uri.parse('$baseUrl/api/v1/contracts/')
+        .replace(queryParameters: queryParams);
     print('URL da requisição: $url');
 
     final response = await http.get(
