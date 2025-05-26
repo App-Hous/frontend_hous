@@ -54,13 +54,13 @@ class ContratoCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                (contrato['contract_number']?.toString() ?? '-'),
+                contrato['title']?.toString() ?? contrato['contract_number']?.toString() ?? '-',
                 style: Theme.of(context).textTheme.titleLarge,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
               Text(
-                _traduzirTipo(contrato['type']?.toString()),
+                contrato['contract_number']?.toString() ?? '-',
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium

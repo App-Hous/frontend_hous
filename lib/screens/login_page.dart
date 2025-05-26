@@ -95,20 +95,28 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                       child: Column(
                         children: [
                           Container(
-                            padding: EdgeInsets.all(16),
+                            width: 70,
+                            height: 70,
+                            padding: EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              shape: BoxShape.circle,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  spreadRadius: 2,
+                                ),
+                              ],
                             ),
-                            child: Icon(
-                              Icons.construction,
-                              size: 50,
-                              color: Color(0xFF2C3E50),
+                            child: Image.asset(
+                              'images/logo_hous.png',
+                              fit: BoxFit.contain,
                             ),
                           ),
                           SizedBox(height: 16),
                           Text(
-                            'ConstrApp',
+                            'Hous',
                             style: GoogleFonts.poppins(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -199,7 +207,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '© 2025 ConstrApp - Todos os direitos reservados',
+                      '© 2025 Hous - Todos os direitos reservados',
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 12,
@@ -362,8 +370,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildInfoSection(
-          'O que é o ConstrApp?',
-          'O ConstrApp é uma solução completa para gerenciamento de obras e construções, desenvolvida para otimizar processos e aumentar a produtividade de construtoras e profissionais da construção civil.'
+          'O que é o Hous?',
+          'O Hous é uma solução completa para gerenciamento de obras e construções, desenvolvida para otimizar processos e aumentar a produtividade de construtoras e profissionais da construção civil.'
         ),
         
         SizedBox(height: 16),
@@ -385,7 +393,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         
         _buildInfoSection(
           'Benefícios',
-          'Reduza custos, aumente a eficiência operacional e tenha total controle sobre seus projetos. Com o ConstrApp, sua empresa estará preparada para crescer com organização e qualidade.'
+          'Reduza custos, aumente a eficiência operacional e tenha total controle sobre seus projetos. Com o Hous, sua empresa estará preparada para crescer com organização e qualidade.'
         ),
         
         SizedBox(height: 16),

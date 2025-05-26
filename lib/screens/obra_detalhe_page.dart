@@ -82,6 +82,7 @@ class _ObraDetalhePageState extends State<ObraDetalhePage> {
         status: statusSelecionado,
         companyId: int.tryParse(companyIdController.text) ?? 0,
         managerId: int.tryParse(managerIdController.text) ?? 0,
+        project_id: obra['project_id'],
       );
 
       if (!mounted) return;
@@ -151,7 +152,7 @@ class _ObraDetalhePageState extends State<ObraDetalhePage> {
                 items: [
                   DropdownMenuItem(value: 'planning', child: Text('Planejamento')),
                   DropdownMenuItem(value: 'in_progress', child: Text('Em andamento')),
-                  DropdownMenuItem(value: 'finished', child: Text('Concluído')),
+                  DropdownMenuItem(value: 'completed', child: Text('Concluído')),
                 ],
                 onChanged: (value) => setState(() => statusSelecionado = value!),
                 decoration: const InputDecoration(labelText: 'Status'),

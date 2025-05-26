@@ -32,7 +32,7 @@ class SideMenu extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.dashboard),
-            title: const Text('Dashboard'),
+            title: const Text('Relatórios'),
             onTap: () {
               Navigator.pushReplacementNamed(context, '/dashboard');
             },

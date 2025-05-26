@@ -91,7 +91,7 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 140,
+            expandedHeight: 90,
             pinned: true,
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -162,15 +162,8 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   TextFormField(
-                                    controller: numeroController,
-                                    decoration: _inputDecoration('Número do Contrato', Icons.numbers),
-                                    style: GoogleFonts.poppins(),
-                                    validator: (v) => v == null || v.isEmpty ? 'Informe o número' : null,
-                                  ),
-                                  SizedBox(height: 16),
-                                  TextFormField(
                                     controller: tituloController,
-                                    decoration: _inputDecoration('Título do Contrato', Icons.title),
+                                    decoration: _inputDecoration('Título', Icons.title),
                                     style: GoogleFonts.poppins(),
                                     validator: (v) => v == null || v.isEmpty ? 'Informe o título' : null,
                                   ),
@@ -227,16 +220,6 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                           onChanged: (v) => setState(() => _imovelSelecionado = v),
                                           decoration: _inputDecoration('Imóvel', Icons.apartment),
                                           validator: (v) => v == null ? 'Selecione o imóvel' : null,
-                                        ),
-                                      ),
-                                      SizedBox(width: 4),
-                                      Container(
-                                        height: 48,
-                                        width: 48,
-                                        child: IconButton(
-                                          icon: Icon(Icons.add, color: Color(0xFF2C3E50)),
-                                          tooltip: 'Cadastrar novo imóvel',
-                                          onPressed: _abrirCadastroRapidoImovel,
                                         ),
                                       ),
                                     ],
@@ -317,7 +300,7 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                                       ? 'Selecionar data'
                                                       : '${dataAssinatura!.day.toString().padLeft(2, '0')}/${dataAssinatura!.month.toString().padLeft(2, '0')}/${dataAssinatura!.year}',
                                                   style: GoogleFonts.poppins(
-                                                    fontSize: 16,
+                                                    fontSize: 13,
                                                     color: dataAssinatura == null ? Colors.grey : Colors.black87,
                                                   ),
                                                 ),
@@ -364,7 +347,7 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                                       ? 'Selecionar data'
                                                       : '${dataExpiracao!.day.toString().padLeft(2, '0')}/${dataExpiracao!.month.toString().padLeft(2, '0')}/${dataExpiracao!.year}',
                                                   style: GoogleFonts.poppins(
-                                                    fontSize: 16,
+                                                    fontSize: 13,
                                                     color: dataExpiracao == null ? Colors.grey : Colors.black87,
                                                   ),
                                                 ),
@@ -425,7 +408,7 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
     });
     try {
       await ContractService.createContract(
-        contractNumber: numeroController.text.trim(),
+        contractNumber: tituloController.text.trim(),
         title: tituloController.text.trim(),
         type: tiposMap[_tipoSelecionadoPt!]!,
         propertyType: tipoImovelController.text.trim(),

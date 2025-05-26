@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class UsuarioService {
-  static const String baseUrl = 'http://localhost:8000'; // IP local
+  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
 
   static Future<void> criarUsuario(String nome, String email, String senha, String username) async {
-    final url = Uri.parse('$baseUrl/api/v1/users/register');
+    final url = Uri.parse('$baseUrl/api/v1/users/');
 
     final response = await http.post(
       url,

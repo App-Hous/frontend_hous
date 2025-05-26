@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/contract_service.dart';
 
 class DetalhesContratoPage extends StatefulWidget {
@@ -23,15 +24,11 @@ class _DetalhesContratoPageState extends State<DetalhesContratoPage> {
     final args = ModalRoute.of(context)!.settings.arguments;
     int contractId;
 
-    // Handle receiving either a contract object or just an ID
     if (args is int) {
       contractId = args;
     } else if (args is Map<String, dynamic>) {
-      // If we receive the full contract object, we can use it directly
       if (args.containsKey('id')) {
         contractId = args['id'];
-        // Optional: we could set the contract data directly if it's complete
-        // But we'll fetch it from the API to ensure we have the latest data
       } else {
         setState(() {
           _error = 'Contrato não possui ID válido';
@@ -64,92 +61,216 @@ class _DetalhesContratoPageState extends State<DetalhesContratoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detalhes do Contrato'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(
-                  child:
-                      Text(_error!, style: const TextStyle(color: Colors.red)))
-              : _contract == null
-                  ? const Center(child: Text('Contrato não encontrado'))
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Card(
+      backgroundColor: Colors.grey[50],
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 90,
+            pinned: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF34495E),
+                    Color(0xFF2C3E50),
+                  ],
+                ),
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8, right: 16, top: 8, bottom: 16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Detalhes do Contrato',
+                              style: GoogleFonts.poppins(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: _isLoading
+                ? Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 100),
+                      child: CircularProgressIndicator(color: Color(0xFF2C3E50)),
+                    ),
+                  )
+                : _error != null
+                    ? Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 100),
+                          child: Column(
+                            children: [
+                              Icon(Icons.error_outline, size: 48, color: Colors.red),
+                              SizedBox(height: 16),
+                              Text(
+                                _error!,
+                                style: GoogleFonts.poppins(
+                                  color: Colors.red,
+                                  fontSize: 16,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : _contract == null
+                        ? Center(
                             child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Contrato: ${_contract!['contract_number']?.toString() ?? '-'}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  _buildInfoRow('Tipo',
-                                      _traduzirTipo(_contract!['type'])),
-                                  _buildInfoRow('Status',
-                                      _traduzirStatus(_contract!['status'])),
-                                  _buildInfoRow(
+                              padding: EdgeInsets.only(top: 100),
+                              child: Text(
+                                'Contrato não encontrado',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 2,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _contract!['contract_number']?.toString() ?? '-',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF2C3E50),
+                                      ),
+                                    ),
+                                    Divider(height: 32),
+                                    _buildInfoRow(
+                                      'Tipo',
+                                      _traduzirTipo(_contract!['type']),
+                                      Icons.category,
+                                    ),
+                                    _buildInfoRow(
+                                      'Status',
+                                      _traduzirStatus(_contract!['status']),
+                                      Icons.flag,
+                                    ),
+                                    _buildInfoRow(
                                       'Valor',
-                                      _formatarValor(
-                                          _contract!['contract_value'])),
-                                  _buildInfoRow(
+                                      _formatarValor(_contract!['contract_value']),
+                                      Icons.attach_money,
+                                    ),
+                                    _buildInfoRow(
                                       'Data de Assinatura',
-                                      _formatarData(
-                                          _contract!['signing_date'])),
-                                  _buildInfoRow(
+                                      _formatarData(_contract!['signing_date']),
+                                      Icons.calendar_today,
+                                    ),
+                                    _buildInfoRow(
                                       'Data de Expiração',
-                                      _formatarData(
-                                          _contract!['expiration_date'])),
-                                  _buildInfoRow(
-                                      'ID do Cliente',
-                                      _contract!['client_id']?.toString() ??
-                                          '-'),
-                                  _buildInfoRow(
-                                      'ID do Imóvel',
-                                      _contract!['property_id']?.toString() ??
-                                          '-'),
-                                  _buildInfoRow('Descrição',
-                                      _contract!['description'] ?? '-'),
-                                  _buildInfoRow('Observações',
-                                      _contract!['notes'] ?? '-'),
-                                ],
+                                      _formatarData(_contract!['expiration_date']),
+                                      Icons.event,
+                                    ),
+                                    _buildInfoRow(
+                                      'Cliente',
+                                      _contract!['client_name']?.toString() ?? 'Cliente ${_contract!['client_id']}',
+                                      Icons.person,
+                                    ),
+                                    _buildInfoRow(
+                                      'Imóvel',
+                                      _contract!['property_name']?.toString() ?? 'Imóvel ${_contract!['property_id']}',
+                                      Icons.home,
+                                    ),
+                                    if (_contract!['description']?.isNotEmpty ?? false)
+                                      _buildInfoRow(
+                                        'Descrição',
+                                        _contract!['description'],
+                                        Icons.description,
+                                      ),
+                                    if (_contract!['notes']?.isNotEmpty ?? false)
+                                      _buildInfoRow(
+                                        'Observações',
+                                        _contract!['notes'],
+                                        Icons.note,
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildInfoRow(String label, dynamic value) {
-    final safeValue = value?.toString() ?? '-';
+  Widget _buildInfoRow(String label, String value, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 140,
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Color(0xFF2C3E50).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 20, color: Color(0xFF2C3E50)),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  value,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: Color(0xFF2C3E50),
+                  ),
+                ),
+              ],
             ),
           ),
-          Expanded(child: Text(safeValue)),
         ],
       ),
     );

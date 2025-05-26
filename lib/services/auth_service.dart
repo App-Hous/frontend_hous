@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class AuthService {
-  static const String baseUrl = 'http://localhost:8000'; // IP local
+  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
 
   static Future<bool> login(String email, String senha) async {
     final url = Uri.parse('$baseUrl/api/v1/login/access-token');

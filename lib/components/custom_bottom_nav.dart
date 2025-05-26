@@ -27,7 +27,7 @@ class CustomBottomNav extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Vendas'),
         BottomNavigationBarItem(
           icon: Icon(Icons.dashboard),
-          label: 'Dashboard',
+          label: 'Relatórios',
         ),
       ],
     );

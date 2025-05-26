@@ -53,6 +53,8 @@ class _SplashScreenState extends State<SplashScreen>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
+                  width: 150,
+                  height: 150,
                   padding: EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -65,15 +67,16 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ],
                   ),
-                  child: Icon(
-                    Icons.construction,
-                    size: 80,
-                    color: Color(0xFF2C3E50),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'images/logo_hous.png',
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 SizedBox(height: 30),
                 Text(
-                  'ConstrApp',
+                  'Hous',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,

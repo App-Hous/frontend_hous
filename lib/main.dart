@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'routes.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_page.dart';
 
-void main() {
-  runApp(ConstrApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+ 
+    dotenv.env['API_BASE_URL'] = 'http://localhost:8000';
+  }
+  runApp(const Hous());
 }
 
-class ConstrApp extends StatelessWidget {
-  const ConstrApp({super.key});
+class Hous extends StatelessWidget {
+  const Hous({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ConstrApp',
+      title: 'Hous',
       debugShowCheckedModeBanner: false,
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,

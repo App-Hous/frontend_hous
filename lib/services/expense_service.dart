@@ -3,18 +3,28 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
 
 class ExpenseService {
-  static const String baseUrl = 'http://localhost:8000'; // Mesma base URL dos outros serviços
 
+  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
   // Listar todos os gastos
-  static Future<List<Map<String, dynamic>>> getExpenses() async {
+  static Future<List<Map<String, dynamic>>> getExpenses({
+    int? skip = 0,
+    int? limit = 100,
+  }) async {
     final token = await AuthService.getToken();
     if (token == null) {
       throw Exception('Usuário não autenticado');
     }
 
-    final url = Uri.parse('$baseUrl/api/v1/expenses/');
+    final queryParams = {
+      if (skip != null) 'skip': skip.toString(),
+      if (limit != null) 'limit': limit.toString(),
+    };
+
+    final url = Uri.parse('$baseUrl/api/v1/expenses/').replace(queryParameters: queryParams);
     final response = await http.get(
       url,
       headers: {
@@ -32,13 +42,22 @@ class ExpenseService {
   }
 
   // Buscar gastos de um projeto específico
-  static Future<List<Map<String, dynamic>>> getProjectExpenses(int projectId) async {
+  static Future<List<Map<String, dynamic>>> getProjectExpenses(
+    int projectId, {
+    int? skip = 0,
+    int? limit = 100,
+  }) async {
     final token = await AuthService.getToken();
     if (token == null) {
       throw Exception('Usuário não autenticado');
     }
 
-    final url = Uri.parse('$baseUrl/api/v1/expenses/project/$projectId/');
+    final queryParams = {
+      if (skip != null) 'skip': skip.toString(),
+      if (limit != null) 'limit': limit.toString(),
+    };
+
+    final url = Uri.parse('$baseUrl/api/v1/expenses/project/$projectId').replace(queryParameters: queryParams);
     final response = await http.get(
       url,
       headers: {
@@ -55,6 +74,54 @@ class ExpenseService {
     }
   }
 
+  // Buscar soma dos gastos por projeto
+  static Future<double> getExpensesSumByProject(int projectId) async {
+    final token = await AuthService.getToken();
+    if (token == null) {
+      throw Exception('Usuário não autenticado');
+    }
+
+    final url = Uri.parse('$baseUrl/api/v1/expenses/sum/project/$projectId');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return (data['total'] ?? 0.0).toDouble();
+    } else {
+      throw Exception('Erro ao buscar soma dos gastos: ${response.statusCode}');
+    }
+  }
+
+  // Buscar soma dos gastos por categoria
+  static Future<double> getExpensesSumByCategory(int projectId, String category) async {
+    final token = await AuthService.getToken();
+    if (token == null) {
+      throw Exception('Usuário não autenticado');
+    }
+
+    final url = Uri.parse('$baseUrl/api/v1/expenses/sum/category/$projectId/$category');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return (data['total'] ?? 0.0).toDouble();
+    } else {
+      throw Exception('Erro ao buscar soma dos gastos por categoria: ${response.statusCode}');
+    }
+  }
+
   // Criar um novo gasto
   static Future<Map<String, dynamic>> createExpense({
     required int projectId,
@@ -62,11 +129,11 @@ class ExpenseService {
     required double amount,
     required DateTime date,
     required String expenseType,
+    required String category,
+    required Map<String, dynamic> expense_in,
     int? propertyId,
-    String? category,
     String? notes,
     File? receiptFile,
-    String expense_in = 'obra', // Valor padrão para o campo obrigatório
   }) async {
     final token = await AuthService.getToken();
     if (token == null) {
@@ -75,130 +142,60 @@ class ExpenseService {
 
     final url = Uri.parse('$baseUrl/api/v1/expenses/');
     
-    // Se estamos em ambiente web ou se não temos arquivo, usamos JSON direto
-    // Ou se o arquivo tem caminho iniciado com "blob:" (que é o caso no web)
-    if (receiptFile == null || 
-        (receiptFile.path.startsWith('blob:')) ||
-        kIsWeb) {
+    try {
+      var request = http.MultipartRequest('POST', url);
+      request.headers['Authorization'] = 'Bearer $token';
       
-      print("Usando fluxo JSON sem arquivo para enviar o gasto");
-      
-      final response = await http.post(
-        url,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'project_id': projectId,
-          'description': description,
-          'amount': amount,
-          'date': date.toIso8601String(),
-          'expense_type': expenseType,
-          'property_id': propertyId,
-          'category': category,
-          'notes': notes,
-          'expense_in': expense_in, // Campo obrigatório adicionado
-        }),
-      );
+      // Criando o objeto expense_data conforme esperado pelo backend
+      final expense_data = {
+        'project_id': projectId,
+        'description': description,
+        'amount': amount,
+        'date': DateFormat('dd/MM/yyyy').format(date),
+        'expense_type': expenseType,
+        'category': category,
+      };
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (propertyId != null) {
+        expense_data['property_id'] = propertyId;
+      }
+      if (notes != null && notes.isNotEmpty) {
+        expense_data['notes'] = notes;
+      }
+
+      // Enviando expense_data como um campo do formulário
+      request.fields['expense_data'] = jsonEncode(expense_data);
+
+      print('Enviando expense_data:');
+      print(jsonEncode(expense_data));
+      
+      // Adiciona o arquivo se existir
+      if (receiptFile != null && !kIsWeb && await receiptFile.exists()) {
+        var stream = http.ByteStream(receiptFile.openRead());
+        var length = await receiptFile.length();
+        var multipartFile = http.MultipartFile(
+          'receipt',
+          stream,
+          length,
+          filename: receiptFile.path.split('/').last
+        );
+        request.files.add(multipartFile);
+      }
+      
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+      
+      print('Status code: ${response.statusCode}');
+      print('Resposta: ${response.body}');
+
+      if (response.statusCode == 201) {
         return jsonDecode(response.body);
       } else {
         throw Exception('Erro ao criar gasto: ${response.body}');
       }
-    } 
-    // Se não estamos no web e temos um arquivo válido, tentamos o multipart
-    else {
-      try {
-        // Verifica se o arquivo existe antes de tentar enviar
-        bool arquivoValido = false;
-        try {
-          arquivoValido = await receiptFile.exists();
-        } catch (e) {
-          print("Erro ao verificar arquivo: $e");
-          arquivoValido = false;
-        }
-        
-        // Se o arquivo não existir, voltamos para o fluxo JSON
-        if (!arquivoValido) {
-          print("Arquivo inválido, usando fluxo JSON");
-          return await createExpense(
-            projectId: projectId,
-            description: description,
-            amount: amount,
-            date: date,
-            expenseType: expenseType,
-            propertyId: propertyId,
-            category: category,
-            notes: notes,
-            expense_in: expense_in,
-            receiptFile: null, // Remove o arquivo para usar JSON
-          );
-        }
-        
-        var request = http.MultipartRequest('POST', url);
-        
-        // Adiciona o token de autenticação
-        request.headers['Authorization'] = 'Bearer $token';
-        
-        // Adiciona os campos do formulário
-        request.fields['project_id'] = projectId.toString();
-        request.fields['description'] = description;
-        request.fields['amount'] = amount.toString();
-        request.fields['date'] = date.toIso8601String();
-        request.fields['expense_type'] = expenseType;
-        request.fields['expense_in'] = expense_in; // Campo obrigatório adicionado
-        
-        if (propertyId != null) {
-          request.fields['property_id'] = propertyId.toString();
-        }
-        
-        if (category != null) {
-          request.fields['category'] = category;
-        }
-        
-        if (notes != null) {
-          request.fields['notes'] = notes;
-        }
-        
-        // Adiciona o arquivo de recibo
-        var fileStream = http.ByteStream(receiptFile.openRead());
-        var length = await receiptFile.length();
-        var multipartFile = http.MultipartFile(
-          'receipt', 
-          fileStream, 
-          length,
-          filename: receiptFile.path.split('/').last
-        );
-        
-        request.files.add(multipartFile);
-        
-        // Envia a requisição
-        var streamedResponse = await request.send();
-        var response = await http.Response.fromStream(streamedResponse);
-        
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          return jsonDecode(response.body);
-        } else {
-          throw Exception('Erro ao criar gasto: ${response.body}');
-        }
-      } catch (e) {
-        print("Erro ao enviar arquivo: $e");
-        // Se falhar o upload com arquivo, tenta novamente sem o arquivo
-        return await createExpense(
-          projectId: projectId,
-          description: description,
-          amount: amount,
-          date: date,
-          expenseType: expenseType,
-          propertyId: propertyId,
-          category: category,
-          notes: notes,
-          expense_in: expense_in, // Mantém o mesmo valor de expense_in
-          receiptFile: null, // Remove o arquivo para tentar novamente
-        );
-      }
+    } catch (e) {
+      print("Erro ao enviar dados: $e");
+      throw Exception('Erro ao criar gasto: $e');
     }
   }
 

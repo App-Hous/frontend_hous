@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/project_service.dart';
 
-class ObraVisualizarPage extends StatelessWidget {
+class ObraVisualizarPage extends StatefulWidget {
   final Map<String, dynamic> obra;
   final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
   final dateFormat = DateFormat('dd/MM/yyyy');
 
   ObraVisualizarPage({super.key, required this.obra});
+
+  @override
+  _ObraVisualizarPageState createState() => _ObraVisualizarPageState();
+}
+
+class _ObraVisualizarPageState extends State<ObraVisualizarPage> {
+  final ProjectService _projectService = ProjectService();
 
   String traduzirStatus(String? status) {
     switch (status) {
@@ -15,7 +23,7 @@ class ObraVisualizarPage extends StatelessWidget {
         return 'Planejamento';
       case 'in_progress':
         return 'Em andamento';
-      case 'finished':
+      case 'completed':
         return 'Concluído';
       default:
         return 'Indefinido';
@@ -30,7 +38,7 @@ class ObraVisualizarPage extends StatelessWidget {
     
     try {
       final date = DateTime.parse(dateString);
-      return dateFormat.format(date);
+      return widget.dateFormat.format(date);
     } catch (e) {
       print('Erro ao formatar data: $e');
       return 'Data inválida';
@@ -59,21 +67,61 @@ class ObraVisualizarPage extends StatelessWidget {
     }
   }
 
+  Future<void> _confirmarExclusao() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Confirmar Exclusão'),
+        content: Text('Tem certeza que deseja excluir esta obra?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Excluir',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await ProjectService.deleteProject(widget.obra['id']);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Obra excluída com sucesso')),
+        );
+        Navigator.pop(context, true); // Volta para a lista com flag de atualização
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao excluir obra: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final double orcamento = (obra['budget'] is num) 
-        ? (obra['budget'] as num).toDouble() 
+    final double orcamento = (widget.obra['budget'] is num) 
+        ? (widget.obra['budget'] as num).toDouble() 
         : 0.0;
         
-    final double gastoAtual = (obra['current_expenses'] is num) 
-        ? (obra['current_expenses'] as num).toDouble() 
+    final double gastoAtual = (widget.obra['current_expenses'] is num) 
+        ? (widget.obra['current_expenses'] as num).toDouble() 
         : 0.0;
         
     final percentGasto = orcamento > 0 
         ? (gastoAtual / orcamento * 100).clamp(0, 100) 
         : 0.0;
     
-    final status = obra['status'] as String? ?? 'unknown';
+    final status = widget.obra['status'] as String? ?? 'unknown';
     Color statusColor = Colors.grey;
     switch (status) {
       case 'planning':
@@ -82,7 +130,7 @@ class ObraVisualizarPage extends StatelessWidget {
       case 'in_progress':
         statusColor = Colors.blue;
         break;
-      case 'finished':
+      case 'completed':
         statusColor = Colors.green;
         break;
     }
@@ -108,36 +156,51 @@ class ObraVisualizarPage extends StatelessWidget {
               ),
               child: FlexibleSpaceBar(
                 titlePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      obra['name'] ?? 'Sem nome',
-                      style: GoogleFonts.poppins(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 4),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        traduzirStatus(status),
+                title: Container(
+                  width: double.infinity,
+                  child: Wrap(
+                    direction: Axis.vertical,
+                    spacing: 4,
+                    children: [
+                      Text(
+                        widget.obra['name'] ?? 'Sem nome',
                         style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          traduzirStatus(status),
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                background: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF34495E),
+                        Color(0xFF2C3E50),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -152,7 +215,7 @@ class ObraVisualizarPage extends StatelessWidget {
                   Navigator.pushNamed(
                     context,
                     '/obras/editar',
-                    arguments: obra,
+                    arguments: widget.obra,
                   );
                 },
               ),
@@ -178,7 +241,7 @@ class ObraVisualizarPage extends StatelessWidget {
                               SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  obra['address'] ?? 'Sem endereço',
+                                  widget.obra['address'] ?? 'Sem endereço',
                                   style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     color: Colors.grey[800],
@@ -187,12 +250,12 @@ class ObraVisualizarPage extends StatelessWidget {
                               ),
                             ],
                           ),
-                          if (obra['city'] != null || obra['state'] != null) ...[
+                          if (widget.obra['city'] != null || widget.obra['state'] != null) ...[
                             SizedBox(height: 4),
                             Padding(
                               padding: EdgeInsets.only(left: 28),
                               child: Text(
-                                '${obra['city'] ?? ''}${obra['city'] != null && obra['state'] != null ? ' - ' : ''}${obra['state'] ?? ''}',
+                                '${widget.obra['city'] ?? ''}${widget.obra['city'] != null && widget.obra['state'] != null ? ' - ' : ''}${widget.obra['state'] ?? ''}',
                                 style: GoogleFonts.poppins(
                                   fontSize: 14,
                                   color: Colors.grey[600],
@@ -216,7 +279,7 @@ class ObraVisualizarPage extends StatelessWidget {
                                     ),
                                     SizedBox(height: 4),
                                     Text(
-                                      currencyFormat.format(orcamento),
+                                      widget.currencyFormat.format(orcamento),
                                       style: GoogleFonts.poppins(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
@@ -239,7 +302,7 @@ class ObraVisualizarPage extends StatelessWidget {
                                     ),
                                     SizedBox(height: 4),
                                     Text(
-                                      currencyFormat.format(gastoAtual),
+                                      widget.currencyFormat.format(gastoAtual),
                                       style: GoogleFonts.poppins(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
@@ -323,28 +386,28 @@ class ObraVisualizarPage extends StatelessWidget {
                           SizedBox(height: 16),
                           _buildInfoItem(
                             'Descrição',
-                            obra['description']?.toString() ?? '---',
+                            widget.obra['description']?.toString() ?? '---',
                             Icons.description_outlined,
                           ),
                           _buildInfoItem(
                             'Área Total',
-                            '${formatarValor(obra['total_area'])} m²',
+                            '${formatarValor(widget.obra['total_area'])} m²',
                             Icons.square_foot,
                           ),
                           _buildInfoItem(
                             'CEP',
-                            obra['zip_code']?.toString() ?? '---',
+                            widget.obra['zip_code']?.toString() ?? '---',
                             Icons.location_on_outlined,
                           ),
                           Divider(height: 32),
                           _buildInfoItem(
                             'Gerente',
-                            obra['manager_name']?.toString() ?? 'ID ${obra['manager_id'] ?? 'Não atribuído'}',
+                            widget.obra['manager_name']?.toString() ?? 'ID ${widget.obra['manager_id'] ?? 'Não atribuído'}',
                             Icons.person_outline,
                           ),
                           _buildInfoItem(
                             'Empresa',
-                            obra['company_name']?.toString() ?? 'ID ${obra['company_id'] ?? 'Não atribuída'}',
+                            widget.obra['company_name']?.toString() ?? 'ID ${widget.obra['company_id'] ?? 'Não atribuída'}',
                             Icons.business_outlined,
                           ),
                         ],
@@ -371,18 +434,18 @@ class ObraVisualizarPage extends StatelessWidget {
                           SizedBox(height: 16),
                           _buildInfoItem(
                             'Data de Início',
-                            formatarData(obra['start_date']?.toString()),
+                            formatarData(widget.obra['start_date']?.toString()),
                             Icons.calendar_today_outlined,
                           ),
                           _buildInfoItem(
                             'Previsão de Término',
-                            formatarData(obra['expected_end_date']?.toString()),
+                            formatarData(widget.obra['expected_end_date']?.toString()),
                             Icons.event_outlined,
                           ),
-                          if (status == 'finished')
+                          if (status == 'completed')
                             _buildInfoItem(
                               'Término Real',
-                              formatarData(obra['actual_end_date']?.toString()),
+                              formatarData(widget.obra['actual_end_date']?.toString()),
                               Icons.event_available_outlined,
                             ),
                         ],
@@ -395,12 +458,15 @@ class ObraVisualizarPage extends StatelessWidget {
                       Expanded(
                         flex: 3,
                         child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.pushNamed(
+                          onPressed: () async {
+                            final result = await Navigator.pushNamed(
                               context,
                               '/obras/editar',
-                              arguments: obra,
+                              arguments: widget.obra,
                             );
+                            if (result == true) {
+                              Navigator.pop(context, true); // Volta para a lista com flag de atualização
+                            }
                           },
                           icon: Icon(Icons.edit),
                           label: Text('Editar Obra'),
@@ -418,57 +484,12 @@ class ObraVisualizarPage extends StatelessWidget {
                       Expanded(
                         flex: 2,
                         child: OutlinedButton.icon(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: Text(
-                                  'Confirmar Exclusão',
-                                  style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                content: Text(
-                                  'Tem certeza que deseja excluir esta obra?',
-                                  style: GoogleFonts.poppins(),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: Text(
-                                      'Cancelar',
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context); // fecha o dialog
-                                      Navigator.pop(context); // volta para a lista
-                                      // TODO: Implementar a exclusão da obra
-                                    },
-                                    child: Text(
-                                      'Excluir',
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                          icon: Icon(Icons.delete_outline),
+                          onPressed: _confirmarExclusao,
+                          icon: Icon(Icons.delete, color: Colors.red),
                           label: Text('Excluir'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.red,
                             side: BorderSide(color: Colors.red),
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
                           ),
                         ),
                       ),

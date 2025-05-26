@@ -22,7 +22,7 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/': (context) => SplashScreen(),
   '/login': (context) => LoginPage(),
   '/home': (context) => HomePage(),
-  '/dashboard': (context) => DashboardPage(),
+  '/dashboard': (context) => RelatorioPage(),
   '/perfil': (context) => PerfilPage(),
 
   // Rotas de Contratos (todas em português)
@@ -43,6 +43,10 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/obras/lista': (context) => ListaObrasPage(),
   '/obra/detalhe': (context) => ObraDetalhePage(),
   '/obras/nova': (context) => CadastroObraPage(),
+  '/obras/editar': (context) {
+    final obra = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    return CadastroObraPage(obra: obra);
+  },
 
   // Rotas de Cadastro
   '/cadastro/obra': (context) => CadastroObraPage(),

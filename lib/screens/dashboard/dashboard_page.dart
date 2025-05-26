@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+class RelatorioPage extends StatelessWidget {
+  const RelatorioPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +15,7 @@ class DashboardPage extends StatelessWidget {
           onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
         ),
         title: Text(
-          'Dashboard',
+          'Relatórios',
           style: GoogleFonts.poppins(
             color: Color(0xFF2C3E50),
             fontWeight: FontWeight.bold,

@@ -50,7 +50,7 @@ class _ListaObrasPageState extends State<ListaObrasPage> {
         statusFiltro = 'planning';
         break;
       case 'Concluído':
-        statusFiltro = 'finished';
+        statusFiltro = 'completed';
         break;
     }
     return obras.where((obra) => obra['status'] == statusFiltro).toList();
@@ -62,7 +62,7 @@ class _ListaObrasPageState extends State<ListaObrasPage> {
         return 'Planejamento';
       case 'in_progress':
         return 'Em andamento';
-      case 'finished':
+      case 'completed':
         return 'Concluído';
       default:
         return 'Indefinido';
@@ -75,7 +75,7 @@ class _ListaObrasPageState extends State<ListaObrasPage> {
         return Colors.orange;
       case 'in_progress':
         return Colors.blue;
-      case 'finished':
+      case 'completed':
         return Colors.green;
       default:
         return Colors.grey;

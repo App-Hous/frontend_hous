@@ -16,9 +16,9 @@ class ContratoFilter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: filtros.length,
         itemBuilder: (context, index) {
           final filtro = filtros[index];
@@ -35,14 +35,20 @@ class ContratoFilter extends StatelessWidget {
                 }
               },
               backgroundColor: Colors.grey[200],
-              selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-              checkmarkColor: Theme.of(context).primaryColor,
+              selectedColor: Color(0xFF2C3E50).withOpacity(0.2),
+              checkmarkColor: Color(0xFF2C3E50),
               labelStyle: TextStyle(
                 color: isSelected
-                    ? Theme.of(context).primaryColor
-                    : Colors.grey[800],
+                    ? Color(0xFF2C3E50)
+                    : Colors.grey[700],
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 12,
               ),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+              side: isSelected 
+                  ? BorderSide(color: Color(0xFF2C3E50), width: 1.5)
+                  : BorderSide.none,
             ),
           );
         },
@@ -64,8 +70,20 @@ class ContratoFilter extends StatelessWidget {
         return 'Cancelados';
       case 'expired':
         return 'Vencidos';
+      case 'sale':
+        return 'Venda';
+      case 'rental':
+        return 'Aluguel';
+      case 'lease':
+        return 'Arrendamento';
+      case 'other':
+        return 'Outros';
+      case 'high_value':
+        return 'Alto Valor';
+      case 'expiring_soon':
+        return 'Vencem em Breve';
       default:
-        return status;
+        return status.toUpperCase();
     }
   }
 }

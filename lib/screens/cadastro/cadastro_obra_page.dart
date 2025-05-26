@@ -4,7 +4,8 @@ import 'package:intl/intl.dart';
 import '../../services/project_service.dart';
 
 class CadastroObraPage extends StatefulWidget {
-  const CadastroObraPage({Key? key}) : super(key: key);
+  final Map<String, dynamic>? obra;
+  const CadastroObraPage({Key? key, this.obra}) : super(key: key);
 
   @override
   State<CadastroObraPage> createState() => _CadastroObraPageState();
@@ -22,16 +23,47 @@ class _CadastroObraPageState extends State<CadastroObraPage> {
   final TextEditingController orcamentoController = TextEditingController();
   final TextEditingController companyIdController = TextEditingController();
   final TextEditingController managerIdController = TextEditingController();
+  final TextEditingController project_idController = TextEditingController();
 
   DateTime? dataInicio;
   DateTime? dataFimPrevista;
   DateTime? dataFimReal;
   String statusSelecionado = 'planning';
+  int? obraId;
 
   bool carregando = false;
   String? mensagemErro;
 
   final dateFormat = DateFormat('dd/MM/yyyy');
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.obra != null) {
+      // Preenchendo os campos com os dados da obra
+      obraId = widget.obra!['id'];
+      nomeController.text = widget.obra!['name'] ?? '';
+      descricaoController.text = widget.obra!['description'] ?? '';
+      enderecoController.text = widget.obra!['address'] ?? '';
+      cidadeController.text = widget.obra!['city'] ?? '';
+      estadoController.text = widget.obra!['state'] ?? '';
+      cepController.text = widget.obra!['zip_code'] ?? '';
+      areaTotalController.text = widget.obra!['total_area']?.toString() ?? '';
+      orcamentoController.text = widget.obra!['budget']?.toString() ?? '';
+      companyIdController.text = widget.obra!['company_id']?.toString() ?? '';
+      managerIdController.text = widget.obra!['manager_id']?.toString() ?? '';
+      project_idController.text = widget.obra!['project_id']?.toString() ?? '';
+      // Convertendo as datas
+      dataInicio = widget.obra!['start_date'] != null ? 
+          DateTime.tryParse(widget.obra!['start_date']) : null;
+      dataFimPrevista = widget.obra!['expected_end_date'] != null ? 
+          DateTime.tryParse(widget.obra!['expected_end_date']) : null;
+      dataFimReal = widget.obra!['actual_end_date'] != null ? 
+          DateTime.tryParse(widget.obra!['actual_end_date']) : null;
+      
+      statusSelecionado = widget.obra!['status'] ?? 'planning';
+    }
+  }
 
   Future<void> _selecionarData(BuildContext context, DateTime? initial, Function(DateTime) onConfirmar) async {
     final DateTime? data = await showDatePicker(
@@ -71,7 +103,7 @@ class _CadastroObraPageState extends State<CadastroObraPage> {
     }
   }
 
-  void _cadastrar() async {
+  void _salvar() async {
     if (_formKey.currentState?.validate() != true) {
       return;
     }
@@ -86,42 +118,66 @@ class _CadastroObraPageState extends State<CadastroObraPage> {
     final orcamento = double.tryParse(orcamentoController.text.trim()) ?? 0;
     final companyId = int.tryParse(companyIdController.text.trim()) ?? 0;
     final managerId = int.tryParse(managerIdController.text.trim()) ?? 0;
-
+    final project_id = int.tryParse(project_idController.text.trim()) ?? 0;
     setState(() => carregando = true);
 
     try {
-      await ProjectService.createProject(
-        nome: nome,
-        descricao: descricao,
-        endereco: endereco,
-        cidade: cidade,
-        estado: estado,
-        cep: cep,
-        areaTotal: areaTotal,
-        orcamento: orcamento,
-        dataInicio: dataInicio!,
-        dataFimPrevista: dataFimPrevista!,
-        dataFimReal: dataFimReal!,
-        status: statusSelecionado,
-        companyId: companyId,
-        managerId: managerId,
-      );
+      if (obraId != null) {
+        // Atualizar obra existente
+        await ProjectService.updateProject(
+          id: obraId!,
+          nome: nome,
+          descricao: descricao,
+          endereco: endereco,
+          cidade: cidade,
+          estado: estado,
+          cep: cep,
+          areaTotal: areaTotal,
+          orcamento: orcamento,
+          dataInicio: dataInicio ?? DateTime.now(),
+          dataFimPrevista: dataFimPrevista ?? DateTime.now().add(Duration(days: 30)),
+          dataFimReal: dataFimReal ?? DateTime.now(),
+          status: statusSelecionado,
+          companyId: companyId,
+          managerId: managerId,
+          project_id: obraId!,
+        );
+      } else {
+        // Criar nova obra
+        await ProjectService.createProject(
+          nome: nome,
+          descricao: descricao,
+          endereco: endereco,
+          cidade: cidade,
+          estado: estado,
+          cep: cep,
+          areaTotal: areaTotal,
+          orcamento: orcamento,
+          dataInicio: dataInicio ?? DateTime.now(),
+          dataFimPrevista: dataFimPrevista ?? DateTime.now().add(Duration(days: 30)),
+          dataFimReal: dataFimReal ?? DateTime.now(),
+          status: statusSelecionado,
+          companyId: companyId,
+          managerId: managerId,
+        );
+      }
+      
       if (!mounted) return;
-      Navigator.pop(context);
+      Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Projeto cadastrado com sucesso!'),
+        SnackBar(
+          content: Text(obraId != null ? 'Obra atualizada com sucesso!' : 'Obra cadastrada com sucesso!'),
           backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
       setState(() {
-        mensagemErro = 'Erro ao cadastrar obra: ${e.toString()}';
+        mensagemErro = 'Erro ao ${obraId != null ? 'atualizar' : 'cadastrar'} obra: ${e.toString()}';
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erro ao cadastrar projeto: ${e.toString()}'),
+          content: Text(mensagemErro!),
           backgroundColor: Colors.red,
         ),
       );
@@ -389,14 +445,6 @@ class _CadastroObraPageState extends State<CadastroObraPage> {
                     ),
                   ),
                 ),
-                if (dataInicio == null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4, left: 36, right: 24),
-                    child: Text(
-                      'Por favor, selecione a data de início',
-                      style: TextStyle(color: Colors.red, fontSize: 12),
-                    ),
-                  ),
                 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -426,14 +474,6 @@ class _CadastroObraPageState extends State<CadastroObraPage> {
                     ),
                   ),
                 ),
-                if (dataFimPrevista == null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4, left: 36, right: 24),
-                    child: Text(
-                      'Por favor, selecione a data prevista',
-                      style: TextStyle(color: Colors.red, fontSize: 12),
-                    ),
-                  ),
                 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -463,14 +503,6 @@ class _CadastroObraPageState extends State<CadastroObraPage> {
                     ),
                   ),
                 ),
-                if (dataFimReal == null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4, left: 36, right: 24),
-                    child: Text(
-                      'Por favor, selecione a data real',
-                      style: TextStyle(color: Colors.red, fontSize: 12),
-                    ),
-                  ),
                 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -559,7 +591,7 @@ class _CadastroObraPageState extends State<CadastroObraPage> {
                     child: carregando
                         ? Center(child: CircularProgressIndicator())
                         : ElevatedButton.icon(
-                            onPressed: _cadastrar,
+                            onPressed: _salvar,
                             icon: const Icon(Icons.add_circle_outline),
                             label: const Text('CADASTRAR OBRA', style: TextStyle(fontSize: 16)),
                             style: ElevatedButton.styleFrom(

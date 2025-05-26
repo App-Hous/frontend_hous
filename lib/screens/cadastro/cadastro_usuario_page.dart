@@ -327,7 +327,7 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '© 2023 ConstrApp - Todos os direitos reservados',
+                        '© 2023 Hous - Todos os direitos reservados',
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 12,

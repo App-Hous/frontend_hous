@@ -40,12 +40,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       'cor': Color(0xFF3498DB),
     },
     {
-      'titulo': 'Registrar Gasto',
-      'icone': Icons.payments_outlined,
-      'rota': '/gastos/novo',
-      'cor': Color(0xFF2ECC71),
-    },
-    {
       'titulo': 'Buscar Contratos',
       'descricao': 'Pesquise seus contratos',
       'icone': Icons.search,
@@ -131,21 +125,48 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     try {
       final data = await ProjectService.getProjects();
       final hoje = DateTime.now();
-      final fimSemana = hoje.add(Duration(days: 7 - hoje.weekday));
+      final inicioSemana = hoje.subtract(Duration(days: hoje.weekday - 1));
+      final fimSemana = inicioSemana.add(Duration(days: 6));
+      final inicioMes = DateTime(hoje.year, hoje.month, 1);
+      final fimMes = DateTime(hoje.year, hoje.month + 1, 0);
 
       int andamento = 0;
       int entregas = 0;
       int estourados = 0;
+      double totalGastoMesAtual = 0;
 
-      for (var p in data) {
-        final status = p['status'] ?? '';
-        final gasto = (p['current_expenses'] ?? 0).toDouble();
-        final orcamento = (p['budget'] ?? 0).toDouble();
-        final dataPrevista = DateTime.tryParse(p['expected_end_date'] ?? '') ?? DateTime(2100);
-
-        if (status == 'in_progress') andamento++;
-        if (dataPrevista.isAfter(hoje) && dataPrevista.isBefore(fimSemana)) entregas++;
-        if (gasto > orcamento) estourados++;
+      for (var projeto in data) {
+        final status = projeto['status'] ?? '';
+        final gastoAtual = (projeto['current_expenses'] ?? 0).toDouble();
+        final orcamento = (projeto['budget'] ?? 0).toDouble();
+        
+        // Converte as datas do projeto
+        final dataPrevista = DateTime.tryParse(projeto['expected_end_date'] ?? '') ?? DateTime(2100);
+        final dataInicio = DateTime.tryParse(projeto['start_date'] ?? '');
+        
+        // Calcula obras em andamento
+        if (status == 'in_progress') {
+          andamento++;
+        }
+        
+        // Calcula entregas da semana
+        if (dataPrevista.isAfter(inicioSemana) && 
+            dataPrevista.isBefore(fimSemana) && 
+            status != 'completed') {
+          entregas++;
+        }
+        
+        // Calcula orçamentos estourados
+        if (gastoAtual > orcamento && status != 'completed') {
+          estourados++;
+        }
+        
+        // Calcula gastos do mês atual
+        if (dataInicio != null && 
+            dataInicio.isAfter(inicioMes) && 
+            dataInicio.isBefore(fimMes)) {
+          totalGastoMesAtual += gastoAtual;
+        }
       }
 
       if (mounted) {
@@ -154,12 +175,23 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           obrasAndamento = andamento;
           entregasSemana = entregas;
           orcamentoEstourado = estourados;
+          totalGastoMes = totalGastoMesAtual;
           carregando = false;
         });
       }
     } catch (e) {
-      print('Erro ao carregar projetos: $e');
-      rethrow;
+      print('Erro ao carregar projetos e estatísticas: $e');
+      if (mounted) {
+        setState(() {
+          carregando = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar dados dos projetos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
   
@@ -174,24 +206,28 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       
       for (var gasto in gastos) {
         final dataGasto = DateTime.tryParse(gasto['date'] ?? '');
+        final valorGasto = (gasto['amount'] ?? 0).toDouble();
+        
         if (dataGasto != null && 
             dataGasto.isAfter(inicioMes) && 
             dataGasto.isBefore(fimMes)) {
-          totalMes += (gasto['amount'] ?? 0).toDouble();
+          totalMes += valorGasto;
         }
       }
       
       if (mounted) {
         setState(() {
           totalGastoMes = totalMes;
-          carregando = false;
         });
       }
     } catch (e) {
       print('Erro ao carregar gastos do mês: $e');
-      if (mounted) {
-        setState(() => carregando = false);
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao carregar gastos do mês: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -517,7 +553,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               return Colors.orange;
                             case 'in_progress':
                               return Colors.blue;
-                            case 'finished':
+                            case 'completed':
                               return Colors.green;
                             default:
                               return Colors.grey;
@@ -530,7 +566,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               return 'Planejamento';
                             case 'in_progress':
                               return 'Em andamento';
-                            case 'finished':
+                            case 'completed':
                               return 'Concluído';
                             default:
                               return 'Indefinido';

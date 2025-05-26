@@ -25,9 +25,9 @@ class _CadastroGastoPageState extends State<CadastroGastoPage> {
   
   int? projetoSelecionadoId;
   DateTime? data = DateTime.now();
-  String tipoGastoSelecionado = 'material'; // Padrão
-  String? categoriaSelecionada = 'construção'; // Padrão
-  String expenseInSelecionado = 'obra'; // Padrão para o campo obrigatório
+  String tipoGastoSelecionado = 'material';
+  String categoriaSelecionada = 'construção';
+  String localGastoSelecionado = 'obra';
   File? comprovanteFile;
   bool carregando = false;
   String? mensagemErro;
@@ -179,38 +179,7 @@ class _CadastroGastoPageState extends State<CadastroGastoPage> {
       final valor = double.parse(valorController.text.replaceAll(RegExp(r'[^\d,.]'), '').replaceAll(',', '.'));
       final propertyId = propriedadeIdController.text.isNotEmpty ? 
           int.tryParse(propriedadeIdController.text.trim()) : null;
-      
-      // Verificar se o arquivo é acessível antes de enviar
-      File? fileToSend;
-      
-      if (comprovanteFile != null) {
-        // No ambiente web, não podemos verificar a existência do arquivo
-        if (kIsWeb) {
-          // No ambiente web, informamos que não podemos anexar o arquivo
-          print("Ambiente web: não é possível anexar o arquivo ${comprovanteFile!.path}");
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Não é possível anexar arquivos no ambiente web. O gasto será registrado sem comprovante.'),
-              backgroundColor: Colors.orange,
-              duration: Duration(seconds: 3),
-            ),
-          );
-          fileToSend = null; // No ambiente web, não enviar o arquivo
-        } else {
-          // Em ambientes nativos, verificamos se o arquivo existe
-          try {
-            final exists = await comprovanteFile!.exists();
-            if (exists) {
-              fileToSend = comprovanteFile;
-            } else {
-              print("Arquivo não existe: ${comprovanteFile!.path}");
-            }
-          } catch (e) {
-            print("Erro ao verificar arquivo: $e");
-            fileToSend = null;
-          }
-        }
-      }
+
       
       await ExpenseService.createExpense(
         projectId: projetoSelecionadoId!,
@@ -218,15 +187,15 @@ class _CadastroGastoPageState extends State<CadastroGastoPage> {
         amount: valor,
         date: data!,
         expenseType: tipoGastoSelecionado,
-        propertyId: propertyId,
         category: categoriaSelecionada,
+        expense_in: {}, 
+        propertyId: propertyId,
         notes: notasController.text.trim(),
-        receiptFile: fileToSend,
-        expense_in: expenseInSelecionado,
+        receiptFile: comprovanteFile,
       );
       
       if (mounted) {
-        Navigator.pop(context);
+        Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Gasto registrado com sucesso!'),
@@ -235,14 +204,21 @@ class _CadastroGastoPageState extends State<CadastroGastoPage> {
         );
       }
     } catch (e) {
+      print('Erro ao cadastrar gasto: $e');
       setState(() {
         mensagemErro = 'Erro ao cadastrar gasto: ${e.toString()}';
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(mensagemErro!), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(mensagemErro!),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 4),
+        ),
       );
     } finally {
-      setState(() => carregando = false);
+      if (mounted) {
+        setState(() => carregando = false);
+      }
     }
   }
   
@@ -400,14 +376,24 @@ class _CadastroGastoPageState extends State<CadastroGastoPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   child: DropdownButtonFormField<String>(
                     value: tipoGastoSelecionado,
-                    decoration: _buildInputDecoration('Tipo de Gasto', Icons.category),
+                    decoration: _buildInputDecoration('Tipo de Gasto *', Icons.category),
                     items: tiposGasto.map((tipo) {
                       return DropdownMenuItem<String>(
                         value: tipo,
                         child: Text(tipo.capitalize()),
                       );
                     }).toList(),
-                    onChanged: (val) => setState(() => tipoGastoSelecionado = val!),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() => tipoGastoSelecionado = val);
+                      }
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, selecione o tipo de gasto';
+                      }
+                      return null;
+                    },
                   ),
                 ),
                 
@@ -416,14 +402,24 @@ class _CadastroGastoPageState extends State<CadastroGastoPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   child: DropdownButtonFormField<String>(
                     value: categoriaSelecionada,
-                    decoration: _buildInputDecoration('Categoria', Icons.folder),
+                    decoration: _buildInputDecoration('Categoria *', Icons.folder),
                     items: categorias.map((categoria) {
                       return DropdownMenuItem<String>(
                         value: categoria,
                         child: Text(categoria.capitalize()),
                       );
                     }).toList(),
-                    onChanged: (val) => setState(() => categoriaSelecionada = val),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() => categoriaSelecionada = val);
+                      }
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, selecione uma categoria';
+                      }
+                      return null;
+                    },
                   ),
                 ),
                 
@@ -431,15 +427,19 @@ class _CadastroGastoPageState extends State<CadastroGastoPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   child: DropdownButtonFormField<String>(
-                    value: expenseInSelecionado,
-                    decoration: _buildInputDecoration('Local do Gasto', Icons.location_on),
+                    value: localGastoSelecionado,
+                    decoration: _buildInputDecoration('Local do Gasto *', Icons.location_on),
                     items: locaisGasto.map((local) {
                       return DropdownMenuItem<String>(
                         value: local,
                         child: Text(local.capitalize()),
                       );
                     }).toList(),
-                    onChanged: (val) => setState(() => expenseInSelecionado = val!),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() => localGastoSelecionado = val);
+                      }
+                    },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Por favor, selecione onde o gasto foi realizado';
