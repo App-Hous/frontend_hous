@@ -139,8 +139,7 @@ class _CadastroObraPageState extends State<CadastroObraPage> {
           dataFimReal: dataFimReal ?? DateTime.now(),
           status: statusSelecionado,
           companyId: companyId,
-          managerId: managerId,
-          project_id: obraId!,
+          managerId: managerId
         );
       } else {
         // Criar nova obra

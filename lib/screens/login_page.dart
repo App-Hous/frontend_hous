@@ -77,7 +77,7 @@ class _LoginPageState extends State<LoginPage>
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset:
-          false, // Impede que o teclado empurre o conteúdo para cima
+          false, 
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -230,8 +230,8 @@ class _LoginPageState extends State<LoginPage>
           controller: usernameController,
           style: TextStyle(color: Colors.white),
           decoration: InputDecoration(
-            labelText: 'Email ou nome de usuário',
-            labelStyle: TextStyle(color: Colors.white70),
+            hintText: 'Email ou nome de usuário',
+            hintStyle: TextStyle(color: Colors.white70),
             prefixIcon: Icon(Icons.person, color: Colors.white70),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -247,14 +247,16 @@ class _LoginPageState extends State<LoginPage>
             ),
             filled: true,
             fillColor: Colors.white.withOpacity(0.1),
-            contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
           ),
         ),
 
+
+
         SizedBox(height: 20),
 
-        // Campo de senha
-        TextField(
+       // Campo de senha
+       TextField(
           controller: senhaController,
           style: TextStyle(color: Colors.white),
           obscureText: !_mostraSenha,
@@ -291,6 +293,7 @@ class _LoginPageState extends State<LoginPage>
           ),
           onSubmitted: (_) => _login(),
         ),
+
 
         SizedBox(height: 12),
 

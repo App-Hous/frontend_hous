@@ -46,15 +46,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       'rota': '/contratos/lista',
       'cor': Color(0xFF9B59B6),
     },
-    {
-      'titulo': 'Relatórios',
-      'icone': Icons.analytics_outlined,
-      'rota': '/dashboard',
-      'cor': Color(0xFFE67E22),
-    },
   ];
 
-  // Função para obter a saudação baseada no horário
   String _getSaudacao() {
     final hora = DateTime.now().hour;
     if (hora >= 4 && hora < 12) {
@@ -74,25 +67,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   Future<void> _carregarDados() async {
     try {
-      // Carrega dados do usuário
       await _carregarDadosUsuario();
-      
-      // Carrega os projetos e estatísticas
       await _carregarProjetosEEstatisticas();
-      
-      // Carrega gastos do mês
       await _carregarGastosDoMes();
     } catch (e) {
-      print('Erro ao carregar dados: $e');
+      print('Erro ao carregar dados: \$e');
       if (mounted) {
         setState(() => carregando = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao carregar dados: $e')),
+          SnackBar(content: Text('Erro ao carregar dados: \$e')),
         );
       }
     }
   }
-  
+
   Future<void> _carregarDadosUsuario() async {
     try {
       final userData = await AuthService.getUserData();
@@ -101,12 +89,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           nomeUsuario = userData['full_name'] ?? 'Usuário';
           cargoUsuario = userData['role'] ?? 'Engenheiro';
           userEmail = userData['email'] ?? '';
-          
-          // Criar iniciais do nome do usuário para o avatar
+
           if (nomeUsuario.isNotEmpty) {
             final names = nomeUsuario.split(' ');
             if (names.length > 1) {
-              userInitials = '${names[0][0]}${names[names.length - 1][0]}';
+              userInitials = '\${names[0][0]}\${names[names.length - 1][0]}';
             } else if (names.length == 1 && names[0].isNotEmpty) {
               userInitials = names[0][0];
             } else {
@@ -117,7 +104,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         });
       }
     } catch (e) {
-      print('Erro ao carregar dados do usuário: $e');
+      print('Erro ao carregar dados do usuário: \$e');
     }
   }
 
@@ -132,40 +119,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
       int andamento = 0;
       int entregas = 0;
-      int estourados = 0;
-      double totalGastoMesAtual = 0;
 
       for (var projeto in data) {
         final status = projeto['status'] ?? '';
         final gastoAtual = (projeto['current_expenses'] ?? 0).toDouble();
-        final orcamento = (projeto['budget'] ?? 0).toDouble();
-        
-        // Converte as datas do projeto
         final dataPrevista = DateTime.tryParse(projeto['expected_end_date'] ?? '') ?? DateTime(2100);
         final dataInicio = DateTime.tryParse(projeto['start_date'] ?? '');
-        
-        // Calcula obras em andamento
-        if (status == 'in_progress') {
-          andamento++;
-        }
-        
-        // Calcula entregas da semana
-        if (dataPrevista.isAfter(inicioSemana) && 
-            dataPrevista.isBefore(fimSemana) && 
-            status != 'completed') {
+
+        if (status == 'in_progress') andamento++;
+
+        if (dataPrevista.isAfter(inicioSemana) && dataPrevista.isBefore(fimSemana) && status != 'completed') {
           entregas++;
-        }
-        
-        // Calcula orçamentos estourados
-        if (gastoAtual > orcamento && status != 'completed') {
-          estourados++;
-        }
-        
-        // Calcula gastos do mês atual
-        if (dataInicio != null && 
-            dataInicio.isAfter(inicioMes) && 
-            dataInicio.isBefore(fimMes)) {
-          totalGastoMesAtual += gastoAtual;
         }
       }
 
@@ -174,57 +138,49 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           projetos = data;
           obrasAndamento = andamento;
           entregasSemana = entregas;
-          orcamentoEstourado = estourados;
-          totalGastoMes = totalGastoMesAtual;
           carregando = false;
         });
       }
     } catch (e) {
-      print('Erro ao carregar projetos e estatísticas: $e');
+      print('Erro ao carregar projetos e estatísticas: \$e');
       if (mounted) {
-        setState(() {
-          carregando = false;
-        });
+        setState(() => carregando = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao carregar dados dos projetos: $e'),
+            content: Text('Erro ao carregar dados dos projetos: \$e'),
             backgroundColor: Colors.red,
           ),
         );
       }
     }
   }
-  
+
   Future<void> _carregarGastosDoMes() async {
     try {
       final gastos = await ExpenseService.getExpenses();
       final hoje = DateTime.now();
       final inicioMes = DateTime(hoje.year, hoje.month, 1);
       final fimMes = DateTime(hoje.year, hoje.month + 1, 0);
-      
+
       double totalMes = 0;
-      
+
       for (var gasto in gastos) {
         final dataGasto = DateTime.tryParse(gasto['date'] ?? '');
         final valorGasto = (gasto['amount'] ?? 0).toDouble();
-        
-        if (dataGasto != null && 
-            dataGasto.isAfter(inicioMes) && 
-            dataGasto.isBefore(fimMes)) {
+
+        if (dataGasto != null && dataGasto.isAfter(inicioMes) && dataGasto.isBefore(fimMes)) {
           totalMes += valorGasto;
         }
       }
-      
+
       if (mounted) {
-        setState(() {
-          totalGastoMes = totalMes;
-        });
+        setState(() => totalGastoMes = totalMes);
       }
     } catch (e) {
-      print('Erro ao carregar gastos do mês: $e');
+      print('Erro ao carregar gastos do mês: \$e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erro ao carregar gastos do mês: $e'),
+          content: Text('Erro ao carregar gastos do mês: \$e'),
           backgroundColor: Colors.red,
         ),
       );

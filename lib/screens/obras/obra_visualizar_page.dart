@@ -289,63 +289,12 @@ class _ObraVisualizarPageState extends State<ObraVisualizarPage> {
                                   ],
                                 ),
                               ),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Gasto Atual',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 14,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      widget.currencyFormat.format(gastoAtual),
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: percentGasto > 90
-                                          ? Colors.red
-                                          : percentGasto > 70
-                                            ? Colors.orange
-                                            : Colors.green,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ],
                           ),
                           SizedBox(height: 16),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Progresso do Orçamento',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  Text(
-                                    '${percentGasto.toStringAsFixed(0)}%',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: percentGasto > 90
-                                        ? Colors.red
-                                        : percentGasto > 70
-                                          ? Colors.orange
-                                          : Colors.green,
-                                    ),
-                                  ),
-                                ],
-                              ),
                               SizedBox(height: 8),
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(4),

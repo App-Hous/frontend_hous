@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../services/project_service.dart';
+import '../../services/project_service.dart';
+
 
 class ObraDetalhePage extends StatefulWidget {
   const ObraDetalhePage({super.key});
@@ -63,39 +64,39 @@ class _ObraDetalhePageState extends State<ObraDetalhePage> {
   }
 
   void _salvarAlteracoes() async {
-    if (!_formKey.currentState!.validate()) return;
+  if (!_formKey.currentState!.validate()) return;
 
-    try {
-      await ProjectService.updateProject(
-        id: obra['id'],
-        nome: nomeController.text.trim(),
-        descricao: descricaoController.text.trim(),
-        endereco: enderecoController.text.trim(),
-        cidade: cidadeController.text.trim(),
-        estado: estadoController.text.trim(),
-        cep: cepController.text.trim(),
-        areaTotal: double.tryParse(areaController.text) ?? 0,
-        orcamento: double.tryParse(orcamentoController.text) ?? 0,
-        dataInicio: dataInicio!,
-        dataFimPrevista: dataFimPrevista!,
-        dataFimReal: dataFimReal!,
-        status: statusSelecionado,
-        companyId: int.tryParse(companyIdController.text) ?? 0,
-        managerId: int.tryParse(managerIdController.text) ?? 0,
-        project_id: obra['project_id'],
-      );
+  try {
+    await ProjectService.updateProject(
+      id: obra['id'],
+      nome: nomeController.text.trim(),
+      descricao: descricaoController.text.trim(),
+      endereco: enderecoController.text.trim(),
+      cidade: cidadeController.text.trim(),
+      estado: estadoController.text.trim(),
+      cep: cepController.text.trim(),
+      areaTotal: double.tryParse(areaController.text) ?? 0,
+      orcamento: double.tryParse(orcamentoController.text) ?? 0,
+      dataInicio: dataInicio!,
+      dataFimPrevista: dataFimPrevista!,
+      dataFimReal: dataFimReal!,
+      status: statusSelecionado,
+      companyId: int.tryParse(companyIdController.text) ?? 0,
+      managerId: int.tryParse(managerIdController.text) ?? 0,
+    );
 
-      if (!mounted) return;
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Obra atualizada com sucesso!')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao atualizar obra: \$e')),
-      );
-    }
+    if (!mounted) return;
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Obra atualizada com sucesso!')),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erro ao atualizar obra: $e')),
+    );
   }
+}
+
 
   void _excluirObra() async {
     final confirmado = await showDialog<bool>(

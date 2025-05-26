@@ -34,7 +34,7 @@ class SideMenu extends StatelessWidget {
             leading: const Icon(Icons.dashboard),
             title: const Text('Relatórios'),
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/dashboard');
+              Navigator.pushReplacementNamed(context, '/relatorios');
             },
           ),
           ListTile(

@@ -169,13 +169,16 @@ class _ListaObrasPageState extends State<ListaObrasPage> {
                                 margin: EdgeInsets.only(bottom: 16),
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(16),
-                                  onTap: () {
-                                    Navigator.push(
+                                  onTap: () async {
+                                    final resultado = await Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (_) => ObraVisualizarPage(obra: obra),
                                       ),
                                     );
+                                    if (resultado == true) {
+                                      _carregarObras();
+                                    }
                                   },
                                   child: Padding(
                                     padding: EdgeInsets.all(16),
@@ -251,30 +254,6 @@ class _ListaObrasPageState extends State<ListaObrasPage> {
                                               child: Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        'Gasto: ${currencyFormat.format(gastoAtual)}',
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          color: Colors.grey[600],
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        '${percentGasto.toStringAsFixed(0)}%',
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.bold,
-                                                          color: percentGasto > 90
-                                                              ? Colors.red
-                                                              : percentGasto > 70
-                                                                  ? Colors.orange
-                                                                  : Colors.green,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
                                                   SizedBox(height: 4),
                                                   ClipRRect(
                                                     borderRadius: BorderRadius.circular(4),
@@ -307,10 +286,15 @@ class _ListaObrasPageState extends State<ListaObrasPage> {
               ],
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pushNamed(context, '/obras/nova'),
-        child: Icon(Icons.add),
-        backgroundColor: Color(0xFF2C3E50),
-      ),
+      onPressed: () async {
+        final resultado = await Navigator.pushNamed(context, '/obras/nova');
+        if (resultado == true) {
+          _carregarObras();
+        }
+      },
+      child: Icon(Icons.add),
+      backgroundColor: Color(0xFF2C3E50),
+    ),
     );
   }
 }

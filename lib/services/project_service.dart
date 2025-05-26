@@ -25,127 +25,107 @@ class ProjectService {
     }
   }
 
-  static Future<void> createProject({
-    required String nome,
-    required String descricao,
-    required String endereco,
-    required String cidade,
-    required String estado,
-    required String cep,
-    required double areaTotal,
-    required double orcamento,
-    required DateTime dataInicio,
-    required DateTime dataFimPrevista,
-    required DateTime dataFimReal,
-    required String status,
-    required int companyId,
-    required int managerId,
-  }) async {
-    final token = await _getToken();
-    final url = Uri.parse('$baseUrl/api/v1/projects/');
+ static Future<void> createProject({
+  required String nome,
+  required String descricao,
+  required String endereco,
+  required String cidade,
+  required String estado,
+  required String cep,
+  required double areaTotal,
+  required double orcamento,
+  required DateTime dataInicio,
+  required DateTime dataFimPrevista,
+  required DateTime dataFimReal,
+  required String status,
+  required int companyId,
+  required int managerId,
+}) async {
+  final token = await _getToken();
+  final url = Uri.parse('$baseUrl/api/v1/projects/');
 
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
-        'name': nome,
-        'description': descricao,
-        'content': descricao,
-        'address': endereco,
-        'city': cidade,
-        'state': estado,
-        'zip_code': cep,
-        'total_area': areaTotal,
-        'budget': orcamento,
-        'start_date': dataInicio.toIso8601String(),
-        'expected_end_date': dataFimPrevista.toIso8601String(),
-        'actual_end_date': dataFimReal.toIso8601String(),
-        'status': status,
-        'company_id': companyId,
-        'manager_id': managerId,
-      }),
-    );
+  final body = {
+    'name': nome,
+    'description': descricao,
+    'address': endereco,
+    'city': cidade,
+    'state': estado,
+    'zip_code': cep,
+    'total_area': areaTotal.toString(),
+    'budget': orcamento.toString(),
+    'start_date': dataInicio.toIso8601String().split("T")[0],
+    'expected_end_date': dataFimPrevista.toIso8601String().split("T")[0],
+    'actual_end_date': dataFimReal.toIso8601String().split("T")[0],
+    'status': status,
+    'company_id': companyId.toString(),
+    'manager_id': managerId.toString(),
+  };
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Erro ao criar projeto: ${response.body}');
-    }
+  final response = await http.post(
+    url,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': 'Bearer $token',
+    },
+    body: body,
+  );
+
+  if (response.statusCode != 200 && response.statusCode != 201) {
+    throw Exception('Erro ao criar projeto: ${response.body}');
   }
-
-  static Future<void> updateProject({
-    required int id,
-    required String nome,
-    required String descricao,
-    required String endereco,
-    required String cidade,
-    required String estado,
-    required String cep,
-    required double areaTotal,
-    required double orcamento,
-    required DateTime dataInicio,
-    required DateTime dataFimPrevista,
-    required DateTime dataFimReal,
-    required String status,
-    required int companyId,
-    required int managerId,
-    required int project_id,
-  }) async {
-    final token = await _getToken();
-    final url = Uri.parse('$baseUrl/api/v1/projects/$project_id');
-   
-    final body = {
-      'id': id,
-      'title': nome,
-      'name': nome,
-      'description': descricao,
-      'content': descricao,
-      'address': endereco,
-      'city': cidade,
-      'state': estado,
-      'zip_code': cep,
-      'total_area': areaTotal,
-      'budget': orcamento,
-      'start_date': dataInicio.toIso8601String().split("T")[0],
-      'expected_end_date': dataFimPrevista.toIso8601String().split("T")[0],
-      'actual_end_date': dataFimReal.toIso8601String().split("T")[0],
-      'status': status,
-      'company_id': companyId,
-      'manager_id': managerId,
-      'project_id': id,
-      'user_id': managerId,
-    };
+}
 
 
-    final response = await http.put(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(body),
-    );
+ static Future<void> updateProject({
+  required int id,
+  required String nome,
+  required String descricao,
+  required String endereco,
+  required String cidade,
+  required String estado,
+  required String cep,
+  required double areaTotal,
+  required double orcamento,
+  required DateTime dataInicio,
+  required DateTime dataFimPrevista,
+  required DateTime dataFimReal,
+  required String status,
+  required int companyId,
+  required int managerId,
+}) async {
+  final token = await _getToken();
+  final url = Uri.parse('$baseUrl/api/v1/projects/$id');
 
-    if (response.statusCode != 200) {
- 
-      final erro = jsonDecode(response.body);
-      String errorMessage = 'Erro ao atualizar projeto.';
-      if (erro is Map && erro.containsKey('detail')) {
-        if (erro['detail'] is List && erro['detail'].isNotEmpty) {
-          final firstError = erro['detail'][0];
-          if (firstError is Map && firstError.containsKey('msg') && firstError.containsKey('loc')) {
-            errorMessage = 'Erro: ${firstError['msg']} no campo ${firstError['loc'].join(' -> ')}';
-          } else {
-            errorMessage = jsonEncode(erro['detail']);
-          }
-        } else if (erro['detail'] is String) {
-          errorMessage = erro['detail'];
-        }
-      }
-      throw Exception(errorMessage);
-    }
+  final body = {
+    'name': nome,
+    'description': descricao,
+    'address': endereco,
+    'city': cidade,
+    'state': estado,
+    'zip_code': cep,
+    'total_area': areaTotal.toString(),
+    'budget': orcamento.toString(),
+    'start_date': dataInicio.toIso8601String().split("T")[0],
+    'expected_end_date': dataFimPrevista.toIso8601String().split("T")[0],
+    'actual_end_date': dataFimReal.toIso8601String().split("T")[0],
+    'status': status,
+    'company_id': companyId.toString(),
+    'manager_id': managerId.toString(),
+  };
+
+  final response = await http.put(
+    url,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': 'Bearer $token',
+    },
+    body: body, 
+  );
+
+  if (response.statusCode != 200) {
+    throw Exception('Erro ao atualizar projeto: ${response.body}');
   }
+}
 
   static Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
