@@ -416,16 +416,20 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                Text(
-                                                  dataAssinatura == null
-                                                      ? 'Selecionar data'
-                                                      : '${dataAssinatura!.day.toString().padLeft(2, '0')}/${dataAssinatura!.month.toString().padLeft(2, '0')}/${dataAssinatura!.year}',
-                                                  style: GoogleFonts.poppins(
-                                                    fontSize: 13,
-                                                    color:
-                                                        dataAssinatura == null
-                                                            ? Colors.grey
-                                                            : Colors.black87,
+                                                Flexible(
+                                                  child: Text(
+                                                    dataAssinatura == null
+                                                        ? 'Selecionar'
+                                                        : '${dataAssinatura!.day.toString().padLeft(2, '0')}/${dataAssinatura!.month.toString().padLeft(2, '0')}/${dataAssinatura!.year}',
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 13,
+                                                      color:
+                                                          dataAssinatura == null
+                                                              ? Colors.grey
+                                                              : Colors.black87,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                                 Icon(Icons.arrow_drop_down,
@@ -476,15 +480,20 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                Text(
-                                                  dataExpiracao == null
-                                                      ? 'Selecionar data'
-                                                      : '${dataExpiracao!.day.toString().padLeft(2, '0')}/${dataExpiracao!.month.toString().padLeft(2, '0')}/${dataExpiracao!.year}',
-                                                  style: GoogleFonts.poppins(
-                                                    fontSize: 13,
-                                                    color: dataExpiracao == null
-                                                        ? Colors.grey
-                                                        : Colors.black87,
+                                                Flexible(
+                                                  child: Text(
+                                                    dataExpiracao == null
+                                                        ? 'Selecionar'
+                                                        : '${dataExpiracao!.day.toString().padLeft(2, '0')}/${dataExpiracao!.month.toString().padLeft(2, '0')}/${dataExpiracao!.year}',
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 13,
+                                                      color:
+                                                          dataExpiracao == null
+                                                              ? Colors.grey
+                                                              : Colors.black87,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                                 Icon(Icons.arrow_drop_down,

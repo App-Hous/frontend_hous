@@ -62,173 +62,136 @@ class _DetalhesContratoPageState extends State<DetalhesContratoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 90,
-            pinned: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            flexibleSpace: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF34495E),
-                    Color(0xFF2C3E50),
-                  ],
-                ),
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8, right: 16, top: 8, bottom: 16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Detalhes do Contrato',
-                              style: GoogleFonts.poppins(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+      appBar: AppBar(
+        title: Text(
+          'Detalhes do Contrato',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
-          SliverToBoxAdapter(
-            child: _isLoading
+        ),
+        backgroundColor: Color(0xFF2C3E50),
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: _isLoading
+            ? Center(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 100),
+                  child: CircularProgressIndicator(color: Color(0xFF2C3E50)),
+                ),
+              )
+            : _error != null
                 ? Center(
                     child: Padding(
                       padding: EdgeInsets.only(top: 100),
-                      child: CircularProgressIndicator(color: Color(0xFF2C3E50)),
+                      child: Column(
+                        children: [
+                          Icon(Icons.error_outline,
+                              size: 48, color: Colors.red),
+                          SizedBox(height: 16),
+                          Text(
+                            _error!,
+                            style: GoogleFonts.poppins(
+                              color: Colors.red,
+                              fontSize: 16,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
                   )
-                : _error != null
+                : _contract == null
                     ? Center(
                         child: Padding(
                           padding: EdgeInsets.only(top: 100),
-                          child: Column(
-                            children: [
-                              Icon(Icons.error_outline, size: 48, color: Colors.red),
-                              SizedBox(height: 16),
-                              Text(
-                                _error!,
-                                style: GoogleFonts.poppins(
-                                  color: Colors.red,
-                                  fontSize: 16,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
+                          child: Text(
+                            'Contrato não encontrado',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
                           ),
                         ),
                       )
-                    : _contract == null
-                        ? Center(
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 100),
-                              child: Text(
-                                'Contrato não encontrado',
+                    : Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _contract!['contract_number']?.toString() ??
+                                    '-',
                                 style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF2C3E50),
                                 ),
                               ),
-                            ),
-                          )
-                        : Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                              Divider(height: 32),
+                              _buildInfoRow(
+                                'Tipo',
+                                _traduzirTipo(_contract!['type']),
+                                Icons.category,
                               ),
-                              elevation: 2,
-                              child: Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _contract!['contract_number']?.toString() ?? '-',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF2C3E50),
-                                      ),
-                                    ),
-                                    Divider(height: 32),
-                                    _buildInfoRow(
-                                      'Tipo',
-                                      _traduzirTipo(_contract!['type']),
-                                      Icons.category,
-                                    ),
-                                    _buildInfoRow(
-                                      'Status',
-                                      _traduzirStatus(_contract!['status']),
-                                      Icons.flag,
-                                    ),
-                                    _buildInfoRow(
-                                      'Valor',
-                                      _formatarValor(_contract!['contract_value']),
-                                      Icons.attach_money,
-                                    ),
-                                    _buildInfoRow(
-                                      'Data de Assinatura',
-                                      _formatarData(_contract!['signing_date']),
-                                      Icons.calendar_today,
-                                    ),
-                                    _buildInfoRow(
-                                      'Data de Expiração',
-                                      _formatarData(_contract!['expiration_date']),
-                                      Icons.event,
-                                    ),
-                                    _buildInfoRow(
-                                      'Cliente',
-                                      _contract!['client_name']?.toString() ?? 'Cliente ${_contract!['client_id']}',
-                                      Icons.person,
-                                    ),
-                                    _buildInfoRow(
-                                      'Imóvel',
-                                      _contract!['property_name']?.toString() ?? 'Imóvel ${_contract!['property_id']}',
-                                      Icons.home,
-                                    ),
-                                    if (_contract!['description']?.isNotEmpty ?? false)
-                                      _buildInfoRow(
-                                        'Descrição',
-                                        _contract!['description'],
-                                        Icons.description,
-                                      ),
-                                    if (_contract!['notes']?.isNotEmpty ?? false)
-                                      _buildInfoRow(
-                                        'Observações',
-                                        _contract!['notes'],
-                                        Icons.note,
-                                      ),
-                                  ],
+                              _buildInfoRow(
+                                'Status',
+                                _traduzirStatus(_contract!['status']),
+                                Icons.flag,
+                              ),
+                              _buildInfoRow(
+                                'Valor',
+                                _formatarValor(_contract!['contract_value']),
+                                Icons.attach_money,
+                              ),
+                              _buildInfoRow(
+                                'Data de Assinatura',
+                                _formatarData(_contract!['signing_date']),
+                                Icons.calendar_today,
+                              ),
+                              _buildInfoRow(
+                                'Data de Expiração',
+                                _formatarData(_contract!['expiration_date']),
+                                Icons.event,
+                              ),
+                              _buildInfoRow(
+                                'Cliente',
+                                _contract!['client_name']?.toString() ??
+                                    'Cliente ${_contract!['client_id']}',
+                                Icons.person,
+                              ),
+                              _buildInfoRow(
+                                'Imóvel',
+                                _contract!['property_name']?.toString() ??
+                                    'Imóvel ${_contract!['property_id']}',
+                                Icons.home,
+                              ),
+                              if (_contract!['description']?.isNotEmpty ??
+                                  false)
+                                _buildInfoRow(
+                                  'Descrição',
+                                  _contract!['description'],
+                                  Icons.description,
                                 ),
-                              ),
-                            ),
+                              if (_contract!['notes']?.isNotEmpty ?? false)
+                                _buildInfoRow(
+                                  'Observações',
+                                  _contract!['notes'],
+                                  Icons.note,
+                                ),
+                            ],
                           ),
-          ),
-        ],
+                        ),
+                      ),
       ),
     );
   }
