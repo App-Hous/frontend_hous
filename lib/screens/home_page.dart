@@ -19,7 +19,8 @@ class _HomePageState extends State<HomePage>
   List<Map<String, dynamic>> projetos = [];
   bool carregando = true;
   int obrasAndamento = 0;
-  int entregasSemana = 0;
+  int entregasMes = 0;
+  int obrasConcluidas = 0;
   double totalGastoMes = 0;
   int orcamentoEstourado = 0;
   String nomeUsuario = 'Usuário';
@@ -120,6 +121,7 @@ class _HomePageState extends State<HomePage>
 
       int andamento = 0;
       int entregas = 0;
+      int concluidas = 0;
 
       for (var projeto in data) {
         final status = projeto['status'] ?? '';
@@ -131,8 +133,12 @@ class _HomePageState extends State<HomePage>
 
         if (status == 'in_progress') andamento++;
 
-        if (dataPrevista.isAfter(inicioSemana) &&
-            dataPrevista.isBefore(fimSemana) &&
+        // Contar obras concluídas
+        if (status == 'completed') concluidas++;
+
+        // Contar entregas previstas para este mês (ao invés de semana)
+        if (dataPrevista.isAfter(inicioMes) &&
+            dataPrevista.isBefore(fimMes) &&
             status != 'completed') {
           entregas++;
         }
@@ -142,7 +148,8 @@ class _HomePageState extends State<HomePage>
         setState(() {
           projetos = data;
           obrasAndamento = andamento;
-          entregasSemana = entregas;
+          entregasMes = entregas;
+          obrasConcluidas = concluidas;
           carregando = false;
         });
       }
@@ -338,9 +345,9 @@ class _HomePageState extends State<HomePage>
                                   SizedBox(width: 12),
                                   Expanded(
                                     child: _buildCompactHeaderStat(
-                                      title: 'Entregas Semana',
-                                      value: '$entregasSemana',
-                                      icon: Icons.assignment_turned_in,
+                                      title: 'Obras Concluídas',
+                                      value: '$obrasConcluidas',
+                                      icon: Icons.check_circle,
                                     ),
                                   ),
                                 ],
@@ -367,10 +374,10 @@ class _HomePageState extends State<HomePage>
                           SizedBox(width: 12),
                           Expanded(
                             child: _buildKPICard(
-                                'Entregas esta semana',
-                                '$entregasSemana obras',
-                                Icons.calendar_today,
-                                Colors.green),
+                                'Obras concluídas',
+                                '$obrasConcluidas obras',
+                                Icons.check_circle,
+                                Colors.purple),
                           ),
                         ],
                       ),
