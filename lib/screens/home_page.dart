@@ -14,7 +14,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   List<Map<String, dynamic>> projetos = [];
   bool carregando = true;
   int obrasAndamento = 0;
@@ -123,12 +124,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       for (var projeto in data) {
         final status = projeto['status'] ?? '';
         final gastoAtual = (projeto['current_expenses'] ?? 0).toDouble();
-        final dataPrevista = DateTime.tryParse(projeto['expected_end_date'] ?? '') ?? DateTime(2100);
+        final dataPrevista =
+            DateTime.tryParse(projeto['expected_end_date'] ?? '') ??
+                DateTime(2100);
         final dataInicio = DateTime.tryParse(projeto['start_date'] ?? '');
 
         if (status == 'in_progress') andamento++;
 
-        if (dataPrevista.isAfter(inicioSemana) && dataPrevista.isBefore(fimSemana) && status != 'completed') {
+        if (dataPrevista.isAfter(inicioSemana) &&
+            dataPrevista.isBefore(fimSemana) &&
+            status != 'completed') {
           entregas++;
         }
       }
@@ -168,7 +173,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         final dataGasto = DateTime.tryParse(gasto['date'] ?? '');
         final valorGasto = (gasto['amount'] ?? 0).toDouble();
 
-        if (dataGasto != null && dataGasto.isAfter(inicioMes) && dataGasto.isBefore(fimMes)) {
+        if (dataGasto != null &&
+            dataGasto.isAfter(inicioMes) &&
+            dataGasto.isBefore(fimMes)) {
           totalMes += valorGasto;
         }
       }
@@ -193,7 +200,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     final hoje = DateTime.now();
     final dataFormatada = dateFormatLong.format(hoje);
     final saudacao = _getSaudacao();
-    
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: carregando
@@ -203,7 +210,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 children: [
                   CircularProgressIndicator(color: Color(0xFF2C3E50)),
                   SizedBox(height: 16),
-                  Text('Carregando suas informações...',
+                  Text(
+                    'Carregando suas informações...',
                     style: GoogleFonts.poppins(
                       color: Color(0xFF2C3E50),
                       fontSize: 16,
@@ -249,11 +257,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           '$saudacao, ${nomeUsuario.split(' ').first}',
@@ -296,11 +306,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               ),
                               SizedBox(height: 12),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(Icons.calendar_today, color: Colors.white70, size: 14),
+                                      Icon(Icons.calendar_today,
+                                          color: Colors.white70, size: 14),
                                       SizedBox(width: 6),
                                       Text(
                                         dataFormatada,
@@ -318,7 +330,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                 children: [
                                   Expanded(
                                     child: _buildCompactHeaderStat(
-                                      title: 'Obras Ativas', 
+                                      title: 'Obras Ativas',
                                       value: '$obrasAndamento',
                                       icon: Icons.construction,
                                     ),
@@ -326,7 +338,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   SizedBox(width: 12),
                                   Expanded(
                                     child: _buildCompactHeaderStat(
-                                      title: 'Entregas Semana', 
+                                      title: 'Entregas Semana',
                                       value: '$entregasSemana',
                                       icon: Icons.assignment_turned_in,
                                     ),
@@ -346,37 +358,28 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       child: Row(
                         children: [
                           Expanded(
-                            child: _buildKPICard('Obras em andamento', '$obrasAndamento obras', Icons.construction, Colors.blue),
+                            child: _buildKPICard(
+                                'Obras em andamento',
+                                '$obrasAndamento obras',
+                                Icons.construction,
+                                Colors.blue),
                           ),
                           SizedBox(width: 12),
                           Expanded(
-                            child: _buildKPICard('Entregas esta semana', '$entregasSemana obras', Icons.calendar_today, Colors.green),
+                            child: _buildKPICard(
+                                'Entregas esta semana',
+                                '$entregasSemana obras',
+                                Icons.calendar_today,
+                                Colors.green),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  
+
                   SliverPadding(
-                    padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
                     sliver: SliverToBoxAdapter(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _buildKPICard('Total gasto este mês', currencyFormat.format(totalGastoMes), Icons.payments, Colors.orange),
-                          ),
-                          SizedBox(width: 12),
-                          Expanded(
-                            child: _buildKPICard('Gastos acima do orçamento', '$orcamentoEstourado obras', Icons.warning, Colors.red),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -389,65 +392,30 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             ),
                           ),
                           SizedBox(height: 16),
-                          SizedBox(
-                            height: 110,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: acoesRapidas.length,
-                              separatorBuilder: (context, index) => SizedBox(width: 16),
-                              itemBuilder: (context, index) {
-                                final acao = acoesRapidas[index];
-                                return InkWell(
-                                  onTap: () => Navigator.pushNamed(context, acao['rota']),
-                                  child: Container(
-                                    width: 110,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: (acao['cor'] as Color? ?? Color(0xFF2C3E50)).withOpacity(0.2),
-                                          blurRadius: 10,
-                                          offset: Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Container(
-                                          padding: EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: (acao['cor'] as Color? ?? Color(0xFF2C3E50)).withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: Icon(
-                                            acao['icone'],
-                                            size: 28,
-                                            color: acao['cor'] as Color? ?? Color(0xFF2C3E50),
-                                          ),
-                                        ),
-                                        SizedBox(height: 8),
-                                        Padding(
-                                          padding: EdgeInsets.symmetric(horizontal: 4),
-                                          child: Text(
-                                            acao['titulo'],
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                              color: Color(0xFF2C3E50),
-                                            ),
-                                            textAlign: TextAlign.center,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ).animate().fadeIn().scale(begin: Offset(0.8, 0.8), end: Offset(1, 1));
-                              },
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildKPICard(
+                                  acoesRapidas[0]['titulo'],
+                                  '',
+                                  acoesRapidas[0]['icone'],
+                                  acoesRapidas[0]['cor'],
+                                  onTap: () => Navigator.pushNamed(
+                                      context, acoesRapidas[0]['rota']),
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: _buildKPICard(
+                                  acoesRapidas[1]['titulo'],
+                                  '',
+                                  acoesRapidas[1]['icone'],
+                                  acoesRapidas[1]['cor'],
+                                  onTap: () => Navigator.pushNamed(
+                                      context, acoesRapidas[1]['rota']),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -468,7 +436,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             ),
                           ),
                           TextButton(
-                            onPressed: () => Navigator.pushNamed(context, '/obras/lista'),
+                            onPressed: () =>
+                                Navigator.pushNamed(context, '/obras/lista'),
                             child: Text(
                               'Ver todas',
                               style: GoogleFonts.poppins(
@@ -499,7 +468,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             ),
                           );
                         }
-                        
+
                         final obra = projetos[index];
                         final status = obra['status'] ?? 'unknown';
 
@@ -530,20 +499,26 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         }
 
                         final orcamento = (obra['budget'] ?? 0).toDouble();
-                        final gastoAtual = (obra['current_expenses'] ?? 0).toDouble();
-                        final percentGasto = orcamento > 0 ? (gastoAtual / orcamento * 100).clamp(0, 100) : 0;
+                        final gastoAtual =
+                            (obra['current_expenses'] ?? 0).toDouble();
+                        final percentGasto = orcamento > 0
+                            ? (gastoAtual / orcamento * 100).clamp(0, 100)
+                            : 0;
 
                         return Card(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
                           elevation: 2,
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(16),
                             onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => ObraVisualizarPage(obra: obra),
+                                  builder: (_) =>
+                                      ObraVisualizarPage(obra: obra),
                                 ),
                               );
                             },
@@ -553,13 +528,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Text(
                                           obra['name'] ?? 'Sem nome',
                                           style: GoogleFonts.poppins(
-                                            fontSize: 18, 
+                                            fontSize: 18,
                                             fontWeight: FontWeight.bold,
                                             color: Color(0xFF2C3E50),
                                           ),
@@ -567,10 +543,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                         ),
                                       ),
                                       Container(
-                                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 6),
                                         decoration: BoxDecoration(
-                                          color: corStatus(status).withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(12),
+                                          color: corStatus(status)
+                                              .withOpacity(0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                         ),
                                         child: Text(
                                           traduzirStatus(status),
@@ -586,7 +565,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   SizedBox(height: 12),
                                   Row(
                                     children: [
-                                      Icon(Icons.location_on, size: 18, color: Colors.grey[600]),
+                                      Icon(Icons.location_on,
+                                          size: 18, color: Colors.grey[600]),
                                       SizedBox(width: 4),
                                       Expanded(
                                         child: Text(
@@ -603,7 +583,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   SizedBox(height: 12),
                                   Row(
                                     children: [
-                                      Icon(Icons.attach_money, size: 18, color: Colors.grey[600]),
+                                      Icon(Icons.attach_money,
+                                          size: 18, color: Colors.grey[600]),
                                       SizedBox(width: 4),
                                       Text(
                                         "Orçamento: ${currencyFormat.format(orcamento)}",
@@ -619,10 +600,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
                                                 Text(
                                                   'Gasto: ${currencyFormat.format(gastoAtual)}',
@@ -636,26 +620,28 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                                   style: TextStyle(
                                                     fontSize: 12,
                                                     fontWeight: FontWeight.bold,
-                                                    color: percentGasto > 90 
-                                                      ? Colors.red 
-                                                      : percentGasto > 70 
-                                                        ? Colors.orange 
-                                                        : Colors.green,
+                                                    color: percentGasto > 90
+                                                        ? Colors.red
+                                                        : percentGasto > 70
+                                                            ? Colors.orange
+                                                            : Colors.green,
                                                   ),
                                                 ),
                                               ],
                                             ),
                                             SizedBox(height: 4),
                                             ClipRRect(
-                                              borderRadius: BorderRadius.circular(4),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
                                               child: LinearProgressIndicator(
                                                 value: percentGasto / 100,
-                                                backgroundColor: Colors.grey[200],
-                                                color: percentGasto > 90 
-                                                  ? Colors.red 
-                                                  : percentGasto > 70 
-                                                    ? Colors.orange 
-                                                    : Colors.green,
+                                                backgroundColor:
+                                                    Colors.grey[200],
+                                                color: percentGasto > 90
+                                                    ? Colors.red
+                                                    : percentGasto > 70
+                                                        ? Colors.orange
+                                                        : Colors.green,
                                                 minHeight: 6,
                                               ),
                                             ),
@@ -668,9 +654,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               ),
                             ),
                           ),
-                        ).animate().fadeIn(delay: Duration(milliseconds: 100 * index));
+                        )
+                            .animate()
+                            .fadeIn(delay: Duration(milliseconds: 100 * index));
                       },
-                      childCount: projetos.isEmpty ? 1 : projetos.length.clamp(0, 4),
+                      childCount:
+                          projetos.isEmpty ? 1 : projetos.length.clamp(0, 4),
                     ),
                   ),
                   SliverToBoxAdapter(
@@ -700,14 +689,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         unselectedItemColor: Colors.grey,
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
-          BottomNavigationBarItem(icon: Icon(Icons.construction), label: 'Obras'),
-          BottomNavigationBarItem(icon: Icon(Icons.description), label: 'Contratos'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.construction), label: 'Obras'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.description), label: 'Contratos'),
         ],
       ),
     );
   }
 
-  Widget _buildCompactHeaderStat({required String title, required String value, required IconData icon}) {
+  Widget _buildCompactHeaderStat(
+      {required String title, required String value, required IconData icon}) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
@@ -744,54 +736,65 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildKPICard(String title, String value, IconData icon, Color color) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.2),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: color, size: 20),
-            ),
-            SizedBox(height: 12),
-            Text(
-              title,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: 8),
-            Text(
-              value,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2C3E50),
-              ),
+  Widget _buildKPICard(String title, String value, IconData icon, Color color,
+      {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.2),
+              blurRadius: 10,
+              offset: Offset(0, 4),
             ),
           ],
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: onTap != null
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              SizedBox(height: 12),
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: onTap != null ? TextAlign.center : TextAlign.start,
+              ),
+              if (value.isNotEmpty) ...[
+                SizedBox(height: 8),
+                Text(
+                  value,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2C3E50),
+                  ),
+                  textAlign: onTap != null ? TextAlign.center : TextAlign.start,
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     ).animate().fadeIn().scale(begin: Offset(0.9, 0.9), end: Offset(1, 1));
