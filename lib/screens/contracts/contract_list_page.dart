@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/contract_service.dart';
+import '../../components/contract_status_badge.dart';
 
 class ContractListPage extends StatefulWidget {
   const ContractListPage({super.key});
@@ -228,56 +229,78 @@ class _ContractListPageState extends State<ContractListPage> {
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Tipo: ${contract['type'] ?? 'Não especificado'}'),
-                  Text('Status: ${contract['status'] ?? 'Não especificado'}'),
+                  Text(
+                      'Tipo: ${_getTypeDisplayName(contract['type'] ?? 'other')}'),
+                  const SizedBox(height: 4),
+                  ContractStatusBadge(status: contract['status'] ?? 'pending'),
+                  const SizedBox(height: 4),
                   Text(
                     'Valor: R\$ ${(contract['contract_value'] ?? 0.0).toStringAsFixed(2)}',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
-              trailing: PopupMenuButton<String>(
-                onSelected: (String value) async {
-                  if (value == 'delete') {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Confirmar exclusão'),
-                        content: const Text(
-                            'Tem certeza que deseja excluir este contrato?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancelar'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Excluir'),
-                          ),
-                        ],
-                      ),
-                    );
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Botão para marcar como concluído
+                  if (contract['status'] != 'completed')
+                    IconButton(
+                      icon: const Icon(Icons.check_circle_outline,
+                          color: Colors.green),
+                      onPressed: () =>
+                          _updateContractStatus(contract['id'], 'completed'),
+                      tooltip: 'Marcar como concluído',
+                    ),
 
-                    if (confirm == true) {
-                      try {
-                        await ContractService.deleteContract(contract['id']);
-                        _loadContracts();
-                      } catch (e) {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Erro ao excluir contrato: $e'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
+                  // Menu de ações
+                  PopupMenuButton<String>(
+                    onSelected: (String value) async {
+                      if (value == 'delete') {
+                        await _deleteContract(contract);
+                      } else if (value == 'edit_status') {
+                        await _showStatusDialog(contract);
+                      } else if (value == 'edit') {
+                        Navigator.pushNamed(
+                          context,
+                          '/contratos/editar',
+                          arguments: contract,
+                        ).then((_) => _loadContracts());
                       }
-                    }
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Text('Excluir'),
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'edit_status',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit, size: 16),
+                            SizedBox(width: 8),
+                            Text('Editar Status'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_note, size: 16),
+                            SizedBox(width: 8),
+                            Text('Editar Contrato'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, size: 16, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Excluir',
+                                style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -293,5 +316,149 @@ class _ContractListPageState extends State<ContractListPage> {
         },
       ),
     );
+  }
+
+  Future<void> _updateContractStatus(int contractId, String newStatus) async {
+    try {
+      await ContractService.updateContractStatus(
+        id: contractId,
+        status: newStatus,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Status atualizado para: ${_getStatusDisplayName(newStatus)}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadContracts();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao atualizar status: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteContract(Map<String, dynamic> contract) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar exclusão'),
+        content: Text(
+          'Tem certeza que deseja excluir o contrato "${contract['contract_number']}"?\n\nEsta ação não pode ser desfeita.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await ContractService.deleteContract(contract['id']);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Contrato excluído com sucesso'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          _loadContracts();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao excluir contrato: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _showStatusDialog(Map<String, dynamic> contract) async {
+    final statusOptions = {
+      'active': 'Ativo',
+      'pending': 'Pendente',
+      'completed': 'Concluído',
+      'cancelled': 'Cancelado',
+      'expired': 'Vencido',
+    };
+
+    final selectedStatus = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Alterar Status - ${contract['contract_number']}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: statusOptions.entries.map((entry) {
+            final isCurrentStatus = entry.key == contract['status'];
+            return ListTile(
+              title: Text(entry.value),
+              leading: Radio<String>(
+                value: entry.key,
+                groupValue: contract['status'],
+                onChanged: isCurrentStatus
+                    ? null
+                    : (value) {
+                        Navigator.pop(context, value);
+                      },
+              ),
+              enabled: !isCurrentStatus,
+              subtitle: isCurrentStatus ? const Text('Status atual') : null,
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+        ],
+      ),
+    );
+
+    if (selectedStatus != null && selectedStatus != contract['status']) {
+      await _updateContractStatus(contract['id'], selectedStatus);
+    }
+  }
+
+  String _getStatusDisplayName(String status) {
+    const statusMap = {
+      'active': 'Ativo',
+      'pending': 'Pendente',
+      'completed': 'Concluído',
+      'cancelled': 'Cancelado',
+      'expired': 'Vencido',
+    };
+    return statusMap[status] ?? status;
+  }
+
+  String _getTypeDisplayName(String type) {
+    const typeMap = {
+      'sale': 'Venda',
+      'rental': 'Locação',
+      'lease': 'Arrendamento',
+      'other': 'Outro',
+    };
+    return typeMap[type] ?? type;
   }
 }

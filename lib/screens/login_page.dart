@@ -7,7 +7,8 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
+class _LoginPageState extends State<LoginPage>
+    with SingleTickerProviderStateMixin {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController senhaController = TextEditingController();
   bool _carregando = false;
@@ -56,7 +57,11 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     } catch (e) {
       setState(() {
         _mensagemErro = e.toString().contains('detail')
-            ? e.toString().split('detail: ')[1].replaceAll('"', '').replaceAll('}', '')
+            ? e
+                .toString()
+                .split('detail: ')[1]
+                .replaceAll('"', '')
+                .replaceAll('}', '')
             : 'Erro ao fazer login. Verifique suas credenciais.';
       });
     } finally {
@@ -71,7 +76,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,  // Impede que o teclado empurre o conteúdo para cima
+      resizeToAvoidBottomInset:
+          false, // Impede que o teclado empurre o conteúdo para cima
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -110,7 +116,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                               ],
                             ),
                             child: Image.asset(
-                              'images/logo_hous.png',
+                              'assets/images/logo_hous.png',
                               fit: BoxFit.contain,
                             ),
                           ),
@@ -133,9 +139,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                         ],
                       ),
                     ),
-                    
+
                     SizedBox(height: 40),
-                    
+
                     // Abas Login/Sobre
                     Container(
                       decoration: BoxDecoration(
@@ -155,31 +161,23 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           Container(
                             height: 46,
                             alignment: Alignment.center,
-                            child: Text(
-                              'Login', 
-                              style: TextStyle(
-                                fontSize: 16, 
-                                fontWeight: FontWeight.bold
-                              )
-                            ),
+                            child: Text('Login',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
                           ),
                           Container(
                             height: 46,
                             alignment: Alignment.center,
-                            child: Text(
-                              'Sobre o App', 
-                              style: TextStyle(
-                                fontSize: 16, 
-                                fontWeight: FontWeight.bold
-                              )
-                            ),
+                            child: Text('Sobre o App',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
                     ),
-                    
+
                     SizedBox(height: 30),
-                    
+
                     // Conteúdo das abas
                     SizedBox(
                       height: 400, // Altura fixa para o conteúdo das abas
@@ -188,7 +186,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                         children: [
                           // Aba de Login - SEM scrollabilidade
                           _buildLoginTab(),
-                          
+
                           // Aba Sobre o App - COM scrollabilidade
                           SingleChildScrollView(
                             child: _buildSobreTab(),
@@ -199,10 +197,11 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   ],
                 ),
               ),
-              
+
               // Rodapé
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -222,7 +221,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       ),
     );
   }
-  
+
   Widget _buildLoginTab() {
     return Column(
       children: [
@@ -251,9 +250,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
           ),
         ),
-        
+
         SizedBox(height: 20),
-        
+
         // Campo de senha
         TextField(
           controller: senhaController,
@@ -292,9 +291,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           ),
           onSubmitted: (_) => _login(),
         ),
-        
+
         SizedBox(height: 12),
-        
+
         // Mensagem de erro
         if (_mensagemErro != null)
           Container(
@@ -311,9 +310,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               textAlign: TextAlign.center,
             ),
           ),
-        
+
         SizedBox(height: 24),
-        
+
         // Botão de login
         SizedBox(
           width: double.infinity,
@@ -335,7 +334,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                     width: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2C3E50)),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFF2C3E50)),
                     ),
                   )
                 : Text(
@@ -347,9 +347,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   ),
           ),
         ),
-        
+
         SizedBox(height: 16),
-        
+
         // Link para cadastro
         TextButton(
           onPressed: _irParaCadastro,
@@ -364,18 +364,14 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       ],
     );
   }
-  
+
   Widget _buildSobreTab() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildInfoSection(
-          'O que é o Hous?',
-          'O Hous é uma solução completa para gerenciamento de obras e construções, desenvolvida para otimizar processos e aumentar a produtividade de construtoras e profissionais da construção civil.'
-        ),
-        
+        _buildInfoSection('O que é o Hous?',
+            'O Hous é uma solução completa para gerenciamento de obras e construções, desenvolvida para otimizar processos e aumentar a produtividade de construtoras e profissionais da construção civil.'),
         SizedBox(height: 16),
-        
         _buildInfoSection(
           'Principais Funcionalidades',
           null,
@@ -388,16 +384,10 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             'Dashboard com indicadores de desempenho',
           ],
         ),
-        
         SizedBox(height: 16),
-        
-        _buildInfoSection(
-          'Benefícios',
-          'Reduza custos, aumente a eficiência operacional e tenha total controle sobre seus projetos. Com o Hous, sua empresa estará preparada para crescer com organização e qualidade.'
-        ),
-        
+        _buildInfoSection('Benefícios',
+            'Reduza custos, aumente a eficiência operacional e tenha total controle sobre seus projetos. Com o Hous, sua empresa estará preparada para crescer com organização e qualidade.'),
         SizedBox(height: 16),
-        
         Center(
           child: TextButton(
             onPressed: () {
@@ -414,13 +404,13 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             child: Text('Voltar para o Login'),
           ),
         ),
-        
         SizedBox(height: 20),
       ],
     );
   }
-  
-  Widget _buildInfoSection(String title, String? description, {List<String>? features}) {
+
+  Widget _buildInfoSection(String title, String? description,
+      {List<String>? features}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -444,26 +434,29 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           ),
         if (features != null) ...[
           SizedBox(height: 8),
-          ...features.map((feature) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.check_circle, color: Colors.greenAccent, size: 16),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    feature,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white70,
-                      height: 1.3,
+          ...features
+              .map((feature) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.check_circle,
+                            color: Colors.greenAccent, size: 16),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            feature,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white70,
+                              height: 1.3,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-              ],
-            ),
-          )).toList(),
+                  ))
+              .toList(),
         ],
       ],
     );

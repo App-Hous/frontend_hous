@@ -112,10 +112,12 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
           case 'expiring_soon':
             if (contrato['expiration_date'] != null) {
               try {
-                final dataExpiracao = DateTime.parse(contrato['expiration_date']);
+                final dataExpiracao =
+                    DateTime.parse(contrato['expiration_date']);
                 final agora = DateTime.now();
                 final diferenca = dataExpiracao.difference(agora).inDays;
-                return diferenca <= 30 && diferenca >= 0; // Expiram em até 30 dias
+                return diferenca <= 30 &&
+                    diferenca >= 0; // Expiram em até 30 dias
               } catch (e) {
                 return false;
               }
@@ -132,10 +134,14 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
       final searchLower = _searchQuery.toLowerCase();
       contratosFiltrados = contratosFiltrados.where((contrato) {
         final title = (contrato['title'] ?? '').toString().toLowerCase();
-        final number = (contrato['contract_number'] ?? '').toString().toLowerCase();
-        final clientName = (contrato['client_name'] ?? '').toString().toLowerCase();
-        final propertyName = (contrato['property_name'] ?? '').toString().toLowerCase();
-        final description = (contrato['description'] ?? '').toString().toLowerCase();
+        final number =
+            (contrato['contract_number'] ?? '').toString().toLowerCase();
+        final clientName =
+            (contrato['client_name'] ?? '').toString().toLowerCase();
+        final propertyName =
+            (contrato['property_name'] ?? '').toString().toLowerCase();
+        final description =
+            (contrato['description'] ?? '').toString().toLowerCase();
         final type = (contrato['type'] ?? '').toString().toLowerCase();
         final status = (contrato['status'] ?? '').toString().toLowerCase();
 
@@ -183,7 +189,7 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
     if (result == true) {
       // Contrato criado com sucesso, recarregar lista
       await _loadContratos();
-      
+
       // Mostrar feedback de sucesso
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -221,27 +227,27 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
           onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
         ),
         title: _isSearchExpanded
-          ? TextField(
-              controller: _searchController,
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: 'Buscar contratos...',
-                border: InputBorder.none,
-                hintStyle: TextStyle(color: Colors.grey),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'Buscar contratos...',
+                  border: InputBorder.none,
+                  hintStyle: TextStyle(color: Colors.grey),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+                style: TextStyle(color: Color(0xFF2C3E50)),
+                onChanged: _onSearchChanged,
+                onSubmitted: (_) => _aplicarFiltros(),
+              )
+            : Text(
+                'Contratos',
+                style: GoogleFonts.poppins(
+                  color: Color(0xFF2C3E50),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
               ),
-              style: TextStyle(color: Color(0xFF2C3E50)),
-              onChanged: _onSearchChanged,
-              onSubmitted: (_) => _aplicarFiltros(),
-            )
-          : Text(
-              'Contratos',
-              style: GoogleFonts.poppins(
-                color: Color(0xFF2C3E50),
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
         actions: [
           IconButton(
             icon: Icon(
@@ -270,7 +276,8 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: ContratoFilter(
                   filtroAtual: _filtroAtual,
                   filtros: _filtros,
@@ -282,7 +289,8 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
             if (!_isLoading && _error == null)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -306,7 +314,8 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
                             _aplicarFiltros();
                           },
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.grey[200],
                               borderRadius: BorderRadius.circular(12),
@@ -314,7 +323,8 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.clear, size: 16, color: Colors.grey[600]),
+                                Icon(Icons.clear,
+                                    size: 16, color: Colors.grey[600]),
                                 SizedBox(width: 4),
                                 Text(
                                   'Limpar',
@@ -334,7 +344,8 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
             _isLoading
                 ? SliverFillRemaining(
                     child: Center(
-                      child: CircularProgressIndicator(color: Color(0xFF2C3E50)),
+                      child:
+                          CircularProgressIndicator(color: Color(0xFF2C3E50)),
                     ),
                   )
                 : _error != null
@@ -378,10 +389,12 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.description, size: 64, color: Colors.grey[400]),
+                                  Icon(Icons.description,
+                                      size: 64, color: Colors.grey[400]),
                                   SizedBox(height: 16),
                                   Text(
-                                    _searchQuery.isNotEmpty || _filtroAtual != 'todos'
+                                    _searchQuery.isNotEmpty ||
+                                            _filtroAtual != 'todos'
                                         ? 'Nenhum contrato encontrado com os filtros aplicados'
                                         : 'Nenhum contrato encontrado',
                                     style: GoogleFonts.poppins(
@@ -391,7 +404,8 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
                                     textAlign: TextAlign.center,
                                   ),
                                   SizedBox(height: 16),
-                                  if (_searchQuery.isNotEmpty || _filtroAtual != 'todos')
+                                  if (_searchQuery.isNotEmpty ||
+                                      _filtroAtual != 'todos')
                                     ElevatedButton(
                                       onPressed: () {
                                         setState(() {
@@ -422,7 +436,8 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
                             ),
                           )
                         : SliverPadding(
-                            padding: EdgeInsets.only(bottom: 80, left: 16, right: 16),
+                            padding: EdgeInsets.only(
+                                bottom: 80, left: 16, right: 16),
                             sliver: SliverList(
                               delegate: SliverChildBuilderDelegate(
                                 (context, index) {
@@ -431,35 +446,44 @@ class _ListaContratosPageState extends State<ListaContratosPage> {
                                     padding: const EdgeInsets.only(bottom: 16),
                                     child: ContratoCard(
                                       contrato: contrato,
+                                      onUpdate: _loadContratos,
                                       onTap: () async {
-                                        final result = await Navigator.pushNamed(
+                                        final result =
+                                            await Navigator.pushNamed(
                                           context,
                                           '/contratos/detalhes',
                                           arguments: contrato,
                                         );
-                                        
+
                                         // Se houve alguma mudança nos detalhes, recarregar lista
                                         if (result == true) {
                                           await _loadContratos();
-                                          
+
                                           if (mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
                                               SnackBar(
                                                 content: Row(
                                                   children: [
-                                                    Icon(Icons.refresh, color: Colors.white),
+                                                    Icon(Icons.refresh,
+                                                        color: Colors.white),
                                                     SizedBox(width: 8),
                                                     Text(
                                                       'Lista atualizada com sucesso!',
-                                                      style: GoogleFonts.poppins(color: Colors.white),
+                                                      style:
+                                                          GoogleFonts.poppins(
+                                                              color:
+                                                                  Colors.white),
                                                     ),
                                                   ],
                                                 ),
                                                 backgroundColor: Colors.blue,
                                                 duration: Duration(seconds: 2),
-                                                behavior: SnackBarBehavior.floating,
+                                                behavior:
+                                                    SnackBarBehavior.floating,
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
                                                 ),
                                               ),
                                             );

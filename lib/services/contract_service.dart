@@ -4,7 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ContractService {
-  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+  static String get baseUrl =>
+      dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
 
   static Future<List<Map<String, dynamic>>> getContracts({
     String? search,
@@ -89,27 +90,39 @@ class ContractService {
     final token = await _getToken();
     final url = Uri.parse('$baseUrl/api/v1/contracts/');
 
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
-        'contract_number': contractNumber,
-        'title': title,
-        'type': type,
-        'property_type': propertyType,
-        'description': description,
-        'client_id': clientId,
-        'property_id': propertyId,
-        'signing_date': signingDate.toIso8601String().split('T')[0],
-        'expiration_date': expirationDate.toIso8601String().split('T')[0],
-        'contract_value': contractValue,
-        'status': status,
-        'notes': notes,
-      }),
-    );
+    // Criar FormData para enviar como multipart/form-data
+    final request = http.MultipartRequest('POST', url);
+    request.headers['Authorization'] = 'Bearer $token';
+
+    // Adicionar campos obrigatórios
+    request.fields['contract_number'] = contractNumber;
+    request.fields['type'] = type;
+    request.fields['client_id'] = clientId.toString();
+    request.fields['property_id'] = propertyId.toString();
+    request.fields['signing_date'] =
+        signingDate.toIso8601String().split('T')[0];
+    request.fields['contract_value'] = contractValue.toString();
+
+    // Adicionar campos opcionais apenas se não estiverem vazios
+    if (description.isNotEmpty) {
+      request.fields['description'] = description;
+    }
+    if (expirationDate != null) {
+      request.fields['expiration_date'] =
+          expirationDate.toIso8601String().split('T')[0];
+    }
+    if (status.isNotEmpty) {
+      request.fields['status'] = status;
+    } else {
+      // Se status não for fornecido, usar 'pending' como padrão
+      request.fields['status'] = 'pending';
+    }
+    if (notes.isNotEmpty) {
+      request.fields['notes'] = notes;
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception('Erro ao criar contrato: ${response.body}');
@@ -126,30 +139,89 @@ class ContractService {
     required DateTime dataFim,
     required double valor,
     required String status,
+    String? description,
+    String? notes,
   }) async {
     final token = await _getToken();
     final url = Uri.parse('$baseUrl/api/v1/contracts/$id');
 
-    final response = await http.put(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
-        'contract_number': numero,
-        'type': tipo,
-        'client_id': clienteId,
-        'property_id': propriedadeId,
-        'signing_date': dataInicio.toIso8601String().split('T')[0],
-        'expiration_date': dataFim.toIso8601String().split('T')[0],
-        'contract_value': valor,
-        'status': status,
-      }),
-    );
+    // Criar FormData para enviar como multipart/form-data
+    final request = http.MultipartRequest('PUT', url);
+    request.headers['Authorization'] = 'Bearer $token';
+
+    // Adicionar todos os campos obrigatórios
+    request.fields['contract_number'] = numero;
+    request.fields['type'] = tipo;
+    request.fields['client_id'] = clienteId.toString();
+    request.fields['property_id'] = propriedadeId.toString();
+    request.fields['signing_date'] = dataInicio.toIso8601String().split('T')[0];
+    request.fields['expiration_date'] = dataFim.toIso8601String().split('T')[0];
+    request.fields['contract_value'] = valor.toString();
+    request.fields['status'] = status;
+
+    // Campos opcionais
+    if (description != null && description.isNotEmpty) {
+      request.fields['description'] = description;
+    }
+    if (notes != null && notes.isNotEmpty) {
+      request.fields['notes'] = notes;
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode != 200) {
       throw Exception('Erro ao atualizar contrato: ${response.body}');
+    }
+  }
+
+  static Future<void> updateContractStatus({
+    required int id,
+    required String status,
+  }) async {
+    final token = await _getToken();
+    final url = Uri.parse('$baseUrl/api/v1/contracts/$id');
+
+    // Primeiro, buscar o contrato atual para manter os dados existentes
+    final currentContract = await getContract(id);
+
+    // Criar FormData para enviar como multipart/form-data com todos os campos necessários
+    final request = http.MultipartRequest('PUT', url);
+    request.headers['Authorization'] = 'Bearer $token';
+
+    // Manter todos os campos existentes e apenas alterar o status
+    request.fields['contract_number'] =
+        currentContract['contract_number']?.toString() ?? '';
+    request.fields['type'] = currentContract['type']?.toString() ?? '';
+    request.fields['client_id'] =
+        currentContract['client_id']?.toString() ?? '';
+    request.fields['property_id'] =
+        currentContract['property_id']?.toString() ?? '';
+    request.fields['signing_date'] =
+        currentContract['signing_date']?.toString().split('T')[0] ?? '';
+    request.fields['contract_value'] =
+        currentContract['contract_value']?.toString() ?? '';
+    request.fields['status'] = status; // Apenas este campo será alterado
+
+    // Campos opcionais
+    if (currentContract['description'] != null &&
+        currentContract['description'].toString().isNotEmpty) {
+      request.fields['description'] = currentContract['description'].toString();
+    }
+    if (currentContract['expiration_date'] != null) {
+      request.fields['expiration_date'] =
+          currentContract['expiration_date'].toString().split('T')[0];
+    }
+    if (currentContract['notes'] != null &&
+        currentContract['notes'].toString().isNotEmpty) {
+      request.fields['notes'] = currentContract['notes'].toString();
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode != 200) {
+      throw Exception('Erro ao atualizar status do contrato: ${response.body}');
     }
   }
 

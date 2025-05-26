@@ -6,6 +6,10 @@ import '../../services/servico_service.dart';
 import '../../services/project_service.dart';
 
 class CadastroContratoPage extends StatefulWidget {
+  final Map<String, dynamic>? contrato;
+
+  const CadastroContratoPage({Key? key, this.contrato}) : super(key: key);
+
   @override
   _CadastroContratoPageState createState() => _CadastroContratoPageState();
 }
@@ -52,6 +56,63 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
   void initState() {
     super.initState();
     _carregarDropdowns();
+    _carregarDadosContrato();
+  }
+
+  void _carregarDadosContrato() {
+    if (widget.contrato != null) {
+      final contrato = widget.contrato!;
+
+      // Carregar dados básicos
+      tituloController.text = contrato['contract_number']?.toString() ?? '';
+      numeroController.text = contrato['contract_number']?.toString() ?? '';
+      descricaoController.text = contrato['description']?.toString() ?? '';
+      notasController.text = contrato['notes']?.toString() ?? '';
+      tipoImovelController.text = contrato['property_type']?.toString() ?? '';
+
+      // Carregar valor formatado
+      if (contrato['contract_value'] != null) {
+        final valor =
+            double.tryParse(contrato['contract_value'].toString()) ?? 0.0;
+        valorController.text = valor.toStringAsFixed(2).replaceAll('.', ',');
+      }
+
+      // Carregar datas
+      if (contrato['signing_date'] != null) {
+        try {
+          dataAssinatura = DateTime.parse(contrato['signing_date'].toString());
+        } catch (e) {
+          print('Erro ao parsear data de assinatura: $e');
+        }
+      }
+
+      if (contrato['expiration_date'] != null) {
+        try {
+          dataExpiracao =
+              DateTime.parse(contrato['expiration_date'].toString());
+        } catch (e) {
+          print('Erro ao parsear data de expiração: $e');
+        }
+      }
+
+      // Carregar tipo (converter de inglês para português)
+      final tipoIngles = contrato['type']?.toString();
+      _tipoSelecionadoPt = tiposMap.entries
+          .firstWhere((entry) => entry.value == tipoIngles,
+              orElse: () => const MapEntry('Outro', 'other'))
+          .key;
+
+      // Carregar status (converter de inglês para português)
+      final statusIngles = contrato['status']?.toString();
+      _statusSelecionadoPt = statusMap.entries
+          .firstWhere((entry) => entry.value == statusIngles,
+              orElse: () => const MapEntry('Pendente', 'pending'))
+          .key;
+
+      // Carregar IDs
+      _clienteSelecionado = contrato['client_id'];
+      _imovelSelecionado = contrato['property_id'];
+    }
   }
 
   Future<void> _carregarDropdowns() async {
@@ -109,7 +170,8 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
               ),
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 8, right: 16, top: 8, bottom: 16),
+                  padding: const EdgeInsets.only(
+                      left: 8, right: 16, top: 8, bottom: 16),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -144,15 +206,19 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
             child: _loadingDropdowns
                 ? Padding(
                     padding: const EdgeInsets.only(top: 48.0),
-                    child: Center(child: CircularProgressIndicator(color: Color(0xFF2C3E50))),
+                    child: Center(
+                        child: CircularProgressIndicator(
+                            color: Color(0xFF2C3E50))),
                   )
                 : Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: BoxConstraints(maxWidth: 500),
                         child: Card(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
                           elevation: 2,
                           child: Padding(
                             padding: const EdgeInsets.all(20.0),
@@ -163,9 +229,12 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                 children: [
                                   TextFormField(
                                     controller: tituloController,
-                                    decoration: _inputDecoration('Título', Icons.title),
+                                    decoration:
+                                        _inputDecoration('Título', Icons.title),
                                     style: GoogleFonts.poppins(),
-                                    validator: (v) => v == null || v.isEmpty ? 'Informe o título' : null,
+                                    validator: (v) => v == null || v.isEmpty
+                                        ? 'Informe o título'
+                                        : null,
                                   ),
                                   SizedBox(height: 16),
                                   DropdownButtonFormField<String>(
@@ -173,37 +242,52 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                     items: tiposMap.keys
                                         .map((tipoPt) => DropdownMenuItem(
                                               value: tipoPt,
-                                              child: Text(tipoPt, style: GoogleFonts.poppins()),
+                                              child: Text(tipoPt,
+                                                  style: GoogleFonts.poppins()),
                                             ))
                                         .toList(),
-                                    onChanged: (v) => setState(() => _tipoSelecionadoPt = v),
-                                    decoration: _inputDecoration('Tipo', Icons.category),
-                                    validator: (v) => v == null || v.isEmpty ? 'Selecione o tipo' : null,
+                                    onChanged: (v) =>
+                                        setState(() => _tipoSelecionadoPt = v),
+                                    decoration: _inputDecoration(
+                                        'Tipo', Icons.category),
+                                    validator: (v) => v == null || v.isEmpty
+                                        ? 'Selecione o tipo'
+                                        : null,
                                   ),
                                   SizedBox(height: 16),
                                   TextFormField(
                                     controller: descricaoController,
-                                    decoration: _inputDecoration('Descrição', Icons.description),
+                                    decoration: _inputDecoration(
+                                        'Descrição', Icons.description),
                                     style: GoogleFonts.poppins(),
                                   ),
                                   SizedBox(height: 16),
                                   TextFormField(
                                     controller: tipoImovelController,
-                                    decoration: _inputDecoration('Tipo de Imóvel', Icons.home_work),
+                                    decoration: _inputDecoration(
+                                        'Tipo de Imóvel', Icons.home_work),
                                     style: GoogleFonts.poppins(),
                                   ),
                                   SizedBox(height: 16),
                                   DropdownButtonFormField<int>(
                                     value: _clienteSelecionado,
                                     items: _clientes
-                                        .map<DropdownMenuItem<int>>((cliente) => DropdownMenuItem<int>(
+                                        .map<DropdownMenuItem<int>>((cliente) =>
+                                            DropdownMenuItem<int>(
                                               value: cliente['id'] as int,
-                                              child: Text(cliente['name'] ?? 'Cliente ${cliente['id']}', style: GoogleFonts.poppins()),
+                                              child: Text(
+                                                  cliente['name'] ??
+                                                      'Cliente ${cliente['id']}',
+                                                  style: GoogleFonts.poppins()),
                                             ))
                                         .toList(),
-                                    onChanged: (v) => setState(() => _clienteSelecionado = v),
-                                    decoration: _inputDecoration('Cliente', Icons.person),
-                                    validator: (v) => v == null ? 'Selecione o cliente' : null,
+                                    onChanged: (v) =>
+                                        setState(() => _clienteSelecionado = v),
+                                    decoration: _inputDecoration(
+                                        'Cliente', Icons.person),
+                                    validator: (v) => v == null
+                                        ? 'Selecione o cliente'
+                                        : null,
                                   ),
                                   SizedBox(height: 16),
                                   Row(
@@ -212,14 +296,25 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                         child: DropdownButtonFormField<int>(
                                           value: _imovelSelecionado,
                                           items: _imoveis
-                                              .map<DropdownMenuItem<int>>((imovel) => DropdownMenuItem<int>(
-                                                    value: imovel['id'] as int,
-                                                    child: Text(imovel['name'] ?? 'Imóvel ${imovel['id']}', style: GoogleFonts.poppins()),
-                                                  ))
+                                              .map<DropdownMenuItem<int>>(
+                                                  (imovel) =>
+                                                      DropdownMenuItem<int>(
+                                                        value:
+                                                            imovel['id'] as int,
+                                                        child: Text(
+                                                            imovel['name'] ??
+                                                                'Imóvel ${imovel['id']}',
+                                                            style: GoogleFonts
+                                                                .poppins()),
+                                                      ))
                                               .toList(),
-                                          onChanged: (v) => setState(() => _imovelSelecionado = v),
-                                          decoration: _inputDecoration('Imóvel', Icons.apartment),
-                                          validator: (v) => v == null ? 'Selecione o imóvel' : null,
+                                          onChanged: (v) => setState(
+                                              () => _imovelSelecionado = v),
+                                          decoration: _inputDecoration(
+                                              'Imóvel', Icons.apartment),
+                                          validator: (v) => v == null
+                                              ? 'Selecione o imóvel'
+                                              : null,
                                         ),
                                       ),
                                     ],
@@ -227,18 +322,29 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                   SizedBox(height: 16),
                                   TextFormField(
                                     controller: valorController,
-                                    decoration: _inputDecoration('Valor do Contrato', Icons.attach_money),
+                                    decoration: _inputDecoration(
+                                        'Valor do Contrato',
+                                        Icons.attach_money),
                                     keyboardType: TextInputType.number,
                                     style: GoogleFonts.poppins(),
-                                    validator: (v) => v == null || v.isEmpty ? 'Informe o valor' : null,
+                                    validator: (v) => v == null || v.isEmpty
+                                        ? 'Informe o valor'
+                                        : null,
                                     onChanged: (value) {
-                                      String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
+                                      String newValue = value.replaceAll(
+                                          RegExp(r'[^0-9]'), '');
                                       if (newValue.isEmpty) newValue = '0';
                                       double val = double.parse(newValue) / 100;
-                                      valorController.value = valorController.value.copyWith(
-                                        text: val.toStringAsFixed(2).replaceAll('.', ','),
+                                      valorController.value =
+                                          valorController.value.copyWith(
+                                        text: val
+                                            .toStringAsFixed(2)
+                                            .replaceAll('.', ','),
                                         selection: TextSelection.collapsed(
-                                            offset: val.toStringAsFixed(2).replaceAll('.', ',').length),
+                                            offset: val
+                                                .toStringAsFixed(2)
+                                                .replaceAll('.', ',')
+                                                .length),
                                       );
                                     },
                                   ),
@@ -248,17 +354,23 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                     items: statusMap.keys
                                         .map((statusPt) => DropdownMenuItem(
                                               value: statusPt,
-                                              child: Text(statusPt, style: GoogleFonts.poppins()),
+                                              child: Text(statusPt,
+                                                  style: GoogleFonts.poppins()),
                                             ))
                                         .toList(),
-                                    onChanged: (v) => setState(() => _statusSelecionadoPt = v),
-                                    decoration: _inputDecoration('Status', Icons.flag),
-                                    validator: (v) => v == null || v.isEmpty ? 'Selecione o status' : null,
+                                    onChanged: (v) => setState(
+                                        () => _statusSelecionadoPt = v),
+                                    decoration:
+                                        _inputDecoration('Status', Icons.flag),
+                                    validator: (v) => v == null || v.isEmpty
+                                        ? 'Selecione o status'
+                                        : null,
                                   ),
                                   SizedBox(height: 16),
                                   TextFormField(
                                     controller: notasController,
-                                    decoration: _inputDecoration('Observações', Icons.note),
+                                    decoration: _inputDecoration(
+                                        'Observações', Icons.note),
                                     style: GoogleFonts.poppins(),
                                   ),
                                   SizedBox(height: 20),
@@ -269,14 +381,18 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                           onTap: () async {
                                             final picked = await showDatePicker(
                                               context: context,
-                                              initialDate: dataAssinatura ?? DateTime.now(),
+                                              initialDate: dataAssinatura ??
+                                                  DateTime.now(),
                                               firstDate: DateTime(2000),
                                               lastDate: DateTime(2100),
                                               builder: (context, child) {
                                                 return Theme(
-                                                  data: Theme.of(context).copyWith(
-                                                    colorScheme: ColorScheme.light(
-                                                      primary: Color(0xFF2C3E50),
+                                                  data: Theme.of(context)
+                                                      .copyWith(
+                                                    colorScheme:
+                                                        ColorScheme.light(
+                                                      primary:
+                                                          Color(0xFF2C3E50),
                                                       onPrimary: Colors.white,
                                                       surface: Colors.white,
                                                       onSurface: Colors.black,
@@ -287,13 +403,18 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                               },
                                             );
                                             if (picked != null) {
-                                              setState(() => dataAssinatura = picked);
+                                              setState(() =>
+                                                  dataAssinatura = picked);
                                             }
                                           },
                                           child: InputDecorator(
-                                            decoration: _inputDecoration('Data de Assinatura', Icons.edit_calendar),
+                                            decoration: _inputDecoration(
+                                                'Data de Assinatura',
+                                                Icons.edit_calendar),
                                             child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
                                                 Text(
                                                   dataAssinatura == null
@@ -301,10 +422,14 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                                       : '${dataAssinatura!.day.toString().padLeft(2, '0')}/${dataAssinatura!.month.toString().padLeft(2, '0')}/${dataAssinatura!.year}',
                                                   style: GoogleFonts.poppins(
                                                     fontSize: 13,
-                                                    color: dataAssinatura == null ? Colors.grey : Colors.black87,
+                                                    color:
+                                                        dataAssinatura == null
+                                                            ? Colors.grey
+                                                            : Colors.black87,
                                                   ),
                                                 ),
-                                                Icon(Icons.arrow_drop_down, color: Color(0xFF2C3E50)),
+                                                Icon(Icons.arrow_drop_down,
+                                                    color: Color(0xFF2C3E50)),
                                               ],
                                             ),
                                           ),
@@ -316,14 +441,18 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                           onTap: () async {
                                             final picked = await showDatePicker(
                                               context: context,
-                                              initialDate: dataExpiracao ?? DateTime.now(),
+                                              initialDate: dataExpiracao ??
+                                                  DateTime.now(),
                                               firstDate: DateTime(2000),
                                               lastDate: DateTime(2100),
                                               builder: (context, child) {
                                                 return Theme(
-                                                  data: Theme.of(context).copyWith(
-                                                    colorScheme: ColorScheme.light(
-                                                      primary: Color(0xFF2C3E50),
+                                                  data: Theme.of(context)
+                                                      .copyWith(
+                                                    colorScheme:
+                                                        ColorScheme.light(
+                                                      primary:
+                                                          Color(0xFF2C3E50),
                                                       onPrimary: Colors.white,
                                                       surface: Colors.white,
                                                       onSurface: Colors.black,
@@ -334,13 +463,18 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                               },
                                             );
                                             if (picked != null) {
-                                              setState(() => dataExpiracao = picked);
+                                              setState(
+                                                  () => dataExpiracao = picked);
                                             }
                                           },
                                           child: InputDecorator(
-                                            decoration: _inputDecoration('Data de Expiração', Icons.event),
+                                            decoration: _inputDecoration(
+                                                'Data de Expiração',
+                                                Icons.event),
                                             child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
                                                 Text(
                                                   dataExpiracao == null
@@ -348,10 +482,13 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                                       : '${dataExpiracao!.day.toString().padLeft(2, '0')}/${dataExpiracao!.month.toString().padLeft(2, '0')}/${dataExpiracao!.year}',
                                                   style: GoogleFonts.poppins(
                                                     fontSize: 13,
-                                                    color: dataExpiracao == null ? Colors.grey : Colors.black87,
+                                                    color: dataExpiracao == null
+                                                        ? Colors.grey
+                                                        : Colors.black87,
                                                   ),
                                                 ),
-                                                Icon(Icons.arrow_drop_down, color: Color(0xFF2C3E50)),
+                                                Icon(Icons.arrow_drop_down,
+                                                    color: Color(0xFF2C3E50)),
                                               ],
                                             ),
                                           ),
@@ -362,23 +499,33 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
                                   SizedBox(height: 24),
                                   if (_error != null)
                                     Padding(
-                                      padding: const EdgeInsets.only(bottom: 12),
-                                      child: Text(_error!, style: TextStyle(color: Colors.red)),
+                                      padding:
+                                          const EdgeInsets.only(bottom: 12),
+                                      child: Text(_error!,
+                                          style: TextStyle(color: Colors.red)),
                                     ),
                                   SizedBox(
                                     height: 50,
                                     child: ElevatedButton(
-                                      onPressed: _isLoading ? null : _salvarContrato,
+                                      onPressed:
+                                          _isLoading ? null : _salvarContrato,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Color(0xFF2C3E50),
                                         foregroundColor: Colors.white,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
                                         ),
                                       ),
                                       child: _isLoading
-                                          ? CircularProgressIndicator(color: Colors.white)
-                                          : Text('Cadastrar Contrato', style: GoogleFonts.poppins(fontSize: 16)),
+                                          ? CircularProgressIndicator(
+                                              color: Colors.white)
+                                          : Text(
+                                              widget.contrato == null
+                                                  ? 'Cadastrar Contrato'
+                                                  : 'Salvar Alterações',
+                                              style: GoogleFonts.poppins(
+                                                  fontSize: 16)),
                                     ),
                                   ),
                                 ],
@@ -407,20 +554,38 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
       _error = null;
     });
     try {
-      await ContractService.createContract(
-        contractNumber: tituloController.text.trim(),
-        title: tituloController.text.trim(),
-        type: tiposMap[_tipoSelecionadoPt!]!,
-        propertyType: tipoImovelController.text.trim(),
-        description: descricaoController.text.trim(),
-        clientId: _clienteSelecionado!,
-        propertyId: _imovelSelecionado!,
-        signingDate: dataAssinatura!,
-        expirationDate: dataExpiracao!,
-        contractValue: _parseValor(valorController.text),
-        status: statusMap[_statusSelecionadoPt!]!,
-        notes: notasController.text.trim(),
-      );
+      if (widget.contrato == null) {
+        // Criar novo contrato
+        await ContractService.createContract(
+          contractNumber: tituloController.text.trim(),
+          title: tituloController.text.trim(),
+          type: tiposMap[_tipoSelecionadoPt!]!,
+          propertyType: tipoImovelController.text.trim(),
+          description: descricaoController.text.trim(),
+          clientId: _clienteSelecionado!,
+          propertyId: _imovelSelecionado!,
+          signingDate: dataAssinatura!,
+          expirationDate: dataExpiracao!,
+          contractValue: _parseValor(valorController.text),
+          status: statusMap[_statusSelecionadoPt!]!,
+          notes: notasController.text.trim(),
+        );
+      } else {
+        // Editar contrato existente
+        await ContractService.updateContract(
+          id: widget.contrato!['id'],
+          numero: tituloController.text.trim(),
+          tipo: tiposMap[_tipoSelecionadoPt!]!,
+          clienteId: _clienteSelecionado!,
+          propriedadeId: _imovelSelecionado!,
+          dataInicio: dataAssinatura!,
+          dataFim: dataExpiracao!,
+          valor: _parseValor(valorController.text),
+          status: statusMap[_statusSelecionadoPt!]!,
+          description: descricaoController.text.trim(),
+          notes: notasController.text.trim(),
+        );
+      }
       Navigator.pop(context, true);
     } catch (e) {
       setState(() => _error = e.toString());
@@ -450,10 +615,12 @@ class _CadastroContratoPageState extends State<CadastroContratoPage> {
 
 class CadastroRapidoImovelDialog extends StatefulWidget {
   @override
-  State<CadastroRapidoImovelDialog> createState() => _CadastroRapidoImovelDialogState();
+  State<CadastroRapidoImovelDialog> createState() =>
+      _CadastroRapidoImovelDialogState();
 }
 
-class _CadastroRapidoImovelDialogState extends State<CadastroRapidoImovelDialog> {
+class _CadastroRapidoImovelDialogState
+    extends State<CadastroRapidoImovelDialog> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController nomeController = TextEditingController();
   final TextEditingController descricaoController = TextEditingController();
@@ -505,7 +672,8 @@ class _CadastroRapidoImovelDialogState extends State<CadastroRapidoImovelDialog>
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Cadastro rápido de Imóvel', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+      title: Text('Cadastro rápido de Imóvel',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
       content: _erro != null
           ? Text(_erro!, style: const TextStyle(color: Colors.red))
           : Form(
@@ -516,7 +684,8 @@ class _CadastroRapidoImovelDialogState extends State<CadastroRapidoImovelDialog>
                   TextFormField(
                     controller: nomeController,
                     decoration: InputDecoration(labelText: 'Nome do imóvel'),
-                    validator: (v) => v == null || v.isEmpty ? 'Informe o nome' : null,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Informe o nome' : null,
                   ),
                   TextFormField(
                     controller: descricaoController,
@@ -526,12 +695,14 @@ class _CadastroRapidoImovelDialogState extends State<CadastroRapidoImovelDialog>
                     controller: progressoController,
                     decoration: InputDecoration(labelText: 'Progresso (%)'),
                     keyboardType: TextInputType.number,
-                    validator: (v) => v == null || v.isEmpty ? 'Informe o progresso' : null,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Informe o progresso' : null,
                   ),
                   DropdownButtonFormField<int>(
                     value: _obraSelecionada,
                     items: _obras
-                        .map<DropdownMenuItem<int>>((obra) => DropdownMenuItem<int>(
+                        .map<DropdownMenuItem<int>>((obra) =>
+                            DropdownMenuItem<int>(
                               value: obra['id'] as int,
                               child: Text(obra['name'] ?? 'Obra ${obra['id']}'),
                             ))

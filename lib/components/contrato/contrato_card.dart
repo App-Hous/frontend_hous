@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
 import 'contrato_status.dart';
+import '../../services/contract_service.dart';
 
-class ContratoCard extends StatelessWidget {
+class ContratoCard extends StatefulWidget {
   final Map<String, dynamic> contrato;
   final VoidCallback onTap;
+  final VoidCallback? onUpdate;
 
-  const ContratoCard({Key? key, required this.contrato, required this.onTap})
-      : super(key: key);
+  const ContratoCard({
+    Key? key,
+    required this.contrato,
+    required this.onTap,
+    this.onUpdate,
+  }) : super(key: key);
+
+  @override
+  State<ContratoCard> createState() => _ContratoCardState();
+}
+
+class _ContratoCardState extends State<ContratoCard> {
+  bool _isUpdatingStatus = false;
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +27,7 @@ class ContratoCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
+        onTap: widget.onTap,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -26,6 +39,8 @@ class ContratoCard extends StatelessWidget {
               _buildInfoRows(context),
               const SizedBox(height: 12),
               _buildDates(context),
+              const SizedBox(height: 16),
+              _buildActionButtons(context),
             ],
           ),
         ),
@@ -54,13 +69,15 @@ class ContratoCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                contrato['title']?.toString() ?? contrato['contract_number']?.toString() ?? '-',
+                widget.contrato['title']?.toString() ??
+                    widget.contrato['contract_number']?.toString() ??
+                    '-',
                 style: Theme.of(context).textTheme.titleLarge,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
               Text(
-                contrato['contract_number']?.toString() ?? '-',
+                widget.contrato['contract_number']?.toString() ?? '-',
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium
@@ -70,7 +87,7 @@ class ContratoCard extends StatelessWidget {
             ],
           ),
         ),
-        ContratoStatus(status: contrato['status'] ?? 'Não especificado'),
+        ContratoStatus(status: widget.contrato['status'] ?? 'Não especificado'),
       ],
     );
   }
@@ -82,8 +99,8 @@ class ContratoCard extends StatelessWidget {
         _buildInfoRow(
           context,
           'Cliente',
-          (contrato['client_name']?.toString() ??
-              contrato['client_id']?.toString() ??
+          (widget.contrato['client_name']?.toString() ??
+              widget.contrato['client_id']?.toString() ??
               '-'),
           Icons.person_outline,
         ),
@@ -91,8 +108,8 @@ class ContratoCard extends StatelessWidget {
         _buildInfoRow(
           context,
           'Imóvel',
-          (contrato['property_name']?.toString() ??
-              contrato['property_id']?.toString() ??
+          (widget.contrato['property_name']?.toString() ??
+              widget.contrato['property_id']?.toString() ??
               '-'),
           Icons.home_outlined,
         ),
@@ -100,7 +117,7 @@ class ContratoCard extends StatelessWidget {
         _buildInfoRow(
           context,
           'Valor',
-          _formatarValor(contrato['contract_value']),
+          _formatarValor(widget.contrato['contract_value']),
           Icons.attach_money,
         ),
       ],
@@ -147,7 +164,7 @@ class ContratoCard extends StatelessWidget {
           child: _buildDateInfo(
             context,
             'Início',
-            contrato['signing_date']?.toString().split('T')[0] ??
+            widget.contrato['signing_date']?.toString().split('T')[0] ??
                 'Não especificada',
           ),
         ),
@@ -156,7 +173,7 @@ class ContratoCard extends StatelessWidget {
           child: _buildDateInfo(
             context,
             'Término',
-            contrato['expiration_date']?.toString().split('T')[0] ??
+            widget.contrato['expiration_date']?.toString().split('T')[0] ??
                 'Não especificada',
           ),
         ),
@@ -188,26 +205,209 @@ class ContratoCard extends StatelessWidget {
     );
   }
 
+  Widget _buildActionButtons(BuildContext context) {
+    return Row(
+      children: [
+        // Dropdown para editar status
+        Expanded(
+          flex: 2,
+          child: Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: _isUpdatingStatus
+                ? const Center(
+                    child: SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: widget.contrato['status'],
+                      isExpanded: true,
+                      hint: const Text('Status'),
+                      items: const [
+                        DropdownMenuItem(value: 'active', child: Text('Ativo')),
+                        DropdownMenuItem(
+                            value: 'pending', child: Text('Pendente')),
+                        DropdownMenuItem(
+                            value: 'completed', child: Text('Concluído')),
+                        DropdownMenuItem(
+                            value: 'cancelled', child: Text('Cancelado')),
+                        DropdownMenuItem(
+                            value: 'expired', child: Text('Vencido')),
+                      ],
+                      onChanged: _updateStatus,
+                    ),
+                  ),
+          ),
+        ),
+        const SizedBox(width: 8),
+
+        // Botão de editar
+        Container(
+          height: 40,
+          width: 40,
+          decoration: BoxDecoration(
+            color: Colors.blue[50],
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.blue[200]!),
+          ),
+          child: IconButton(
+            icon: Icon(Icons.edit, color: Colors.blue[600], size: 18),
+            onPressed: () => _editContract(context),
+            tooltip: 'Editar contrato',
+          ),
+        ),
+        const SizedBox(width: 8),
+
+        // Botão de excluir
+        Container(
+          height: 40,
+          width: 40,
+          decoration: BoxDecoration(
+            color: Colors.red[50],
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.red[200]!),
+          ),
+          child: IconButton(
+            icon: Icon(Icons.delete, color: Colors.red[600], size: 18),
+            onPressed: () => _deleteContract(context),
+            tooltip: 'Excluir contrato',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _updateStatus(String? newStatus) async {
+    if (newStatus == null || newStatus == widget.contrato['status']) return;
+
+    setState(() {
+      _isUpdatingStatus = true;
+    });
+
+    try {
+      await ContractService.updateContractStatus(
+        id: widget.contrato['id'],
+        status: newStatus,
+      );
+
+      // Atualizar o status localmente
+      widget.contrato['status'] = newStatus;
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Status atualizado para: ${_getStatusDisplayName(newStatus)}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Chamar callback de atualização se fornecido
+        widget.onUpdate?.call();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao atualizar status: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdatingStatus = false;
+        });
+      }
+    }
+  }
+
+  void _editContract(BuildContext context) {
+    Navigator.pushNamed(
+      context,
+      '/contratos/editar',
+      arguments: widget.contrato,
+    ).then((_) {
+      // Chamar callback de atualização se fornecido
+      widget.onUpdate?.call();
+    });
+  }
+
+  Future<void> _deleteContract(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar exclusão'),
+        content: Text(
+          'Tem certeza que deseja excluir o contrato "${widget.contrato['contract_number']}"?\n\nEsta ação não pode ser desfeita.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await ContractService.deleteContract(widget.contrato['id']);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Contrato excluído com sucesso'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Chamar callback de atualização se fornecido
+          widget.onUpdate?.call();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao excluir contrato: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  String _getStatusDisplayName(String status) {
+    const statusMap = {
+      'active': 'Ativo',
+      'pending': 'Pendente',
+      'completed': 'Concluído',
+      'cancelled': 'Cancelado',
+      'expired': 'Vencido',
+    };
+    return statusMap[status] ?? status;
+  }
+
   String _formatarValor(dynamic valor) {
     if (valor == null) return 'R\$ 0,00';
     final number = double.tryParse(valor.toString()) ?? 0.0;
     return 'R\$ ' +
         number.toStringAsFixed(2).replaceAll('.', ',').replaceAllMapped(
             RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
-  }
-
-  String _traduzirTipo(String? type) {
-    switch (type) {
-      case 'sale':
-        return 'Venda';
-      case 'rental':
-        return 'Aluguel';
-      case 'lease':
-        return 'Arrendamento';
-      case 'other':
-        return 'Outro';
-      default:
-        return type ?? 'Tipo não especificado';
-    }
   }
 }
